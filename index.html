@@ -242,8 +242,8 @@ function setupBuffers() {
 
 function setupTextures() {
 	// Wood texture
-	pwgl.woodTexture = gl.createTexture();
-	loadImageForTexture('assets/wood_128x128.jpg', pwgl.woodTexture);
+	pwgl.moonTexture = gl.createTexture();
+	loadImageForTexture('assets/moon.gif', pwgl.moonTexture);
 }
 
 function loadImageForTexture(url, texture) {
@@ -272,8 +272,8 @@ function textureFinishedLoading(image, texture) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
@@ -288,9 +288,9 @@ function uploadProjectionMatrixToShader() {
 
 function draw() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-	gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 1, 100.0, pwgl.projectionMatrix);
+	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
 	mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
@@ -306,7 +306,7 @@ function draw() {
 	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.woodTexture);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.moonTexture);
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
 	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
@@ -316,7 +316,7 @@ function draw() {
 
 function startup() {
 	canvas = document.getElementById('myGLCanvas');
-	gl = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
 
 	canvas.addEventListener('webglcontextlost', handleContextLost, false);
 	canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
