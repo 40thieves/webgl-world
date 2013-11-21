@@ -155,15 +155,6 @@ function popModelViewMatrix() {
 }
 
 function setupBuffers() {
-	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
-
-	pwgl.vertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
-
-	pwgl.vertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
-
 	var	positionData = []
 	,	indexData = []
 	,	textureCoordData = []
@@ -219,17 +210,29 @@ function setupBuffers() {
 			indexData.push(v1 + 1);
 		}
 	}
+
+	// Creates texture buffer * loads texture data
+	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
 	
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
-	
+
 	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
 	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+	// Creates position buffer & loads position data
+	pwgl.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
 	
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+
 	pwgl.VERTEX_POS_BUFF_ITEM_SIZE = 3;
 	pwgl.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
+	// Creates index buffer & loads index data
+	pwgl.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
+	
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
 	
 	pwgl.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
