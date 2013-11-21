@@ -185,12 +185,12 @@ function setupBuffers() {
 			u = 1 - (j / n);
 			v = 1 - (i / m);
 
+			textureCoordData.push(u);
+			textureCoordData.push(v);
+
 			positionData.push(r * x);
 			positionData.push(r * y);
 			positionData.push(r * z);
-
-			textureCoordData.push(u);
-			textureCoordData.push(v);
 		}
 	}
 
@@ -240,9 +240,9 @@ function setupBuffers() {
 }
 
 function setupTextures() {
-	// Wood texture
-	pwgl.moonTexture = gl.createTexture();
-	loadImageForTexture('assets/moon.gif', pwgl.moonTexture);
+	// Earth texture
+	pwgl.earthTexture = gl.createTexture();
+	loadImageForTexture('assets/earth.jpg', pwgl.earthTexture);
 }
 
 function loadImageForTexture(url, texture) {
@@ -261,18 +261,19 @@ function loadImageForTexture(url, texture) {
 }
 
 function textureFinishedLoading(image, texture) {
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Flips image to use WebGL axis, instead of DOM axis
 	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
-	gl.generateMipmap(gl.TEXTURE_2D);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); // Image loaded, texture area 0
+	gl.generateMipmap(gl.TEXTURE_2D); // Generates mipmap levels
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 
-	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 function uploadModelViewMatrixToShader() {
@@ -289,10 +290,10 @@ function draw() {
 
 	mat4.perspective(30, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.lookAt([10, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
-	uploadModelViewMatrixToShader();
 	uploadProjectionMatrixToShader();
+	uploadModelViewMatrixToShader();
 
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
@@ -303,7 +304,7 @@ function draw() {
 	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.moonTexture);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
 	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
@@ -325,6 +326,7 @@ function startup() {
 	setupTextures();
 
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.enable(gl.DEPTH_TEST);
 	draw();
 }
 
