@@ -155,27 +155,27 @@ function popModelViewMatrix() {
 }
 
 function setupBuffers() {
+	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
+
 	pwgl.vertexPositionBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
 
 	pwgl.vertexIndexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
 
-	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
-
-	var positionData = []
+	var	positionData = []
 	,	indexData = []
 	,	textureCoordData = []
 
 	,	m = 30
 	,	n = 30
-	,	r = 2
+	,	r = 0.5
 
-	,	theta, sinTheta, cosTheta, phi, sinPhi,	cosTheta
+	,	theta, sinTheta, cosTheta, phi, sinPhi, cosPhi
 	,	x, y, z
 	,	u, v
-	,	v1, v2, v3, v4
+	,	v1, v2
 	;
 
 	for (var i = 0; i <= m; i++) {
@@ -191,7 +191,6 @@ function setupBuffers() {
 			x = cosPhi * sinTheta;
 			y = cosTheta;
 			z = sinPhi * sinTheta;
-
 			u = 1 - (j / n);
 			v = 1 - (i / m);
 
@@ -208,7 +207,7 @@ function setupBuffers() {
 		for (var j = 0; j < n; j++) {
 			v1 = (i * (n + 1)) + j;
 			v2 = v1 + n + 1;
-
+			
 			// Indices of first triangle
 			indexData.push(v1);
 			indexData.push(v2);
@@ -220,24 +219,21 @@ function setupBuffers() {
 			indexData.push(v1 + 1);
 		}
 	}
+	
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+	
+	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 
-	// Loads vertex position buffer with data
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
-
+	
 	pwgl.VERTEX_POS_BUFF_ITEM_SIZE = 3;
 	pwgl.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
-	// Loads index buffer with data
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
-
+	
 	pwgl.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
 	pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
-
-	// Loads texture coordinates
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
-
-	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
-	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 }
 
 function setupTextures() {
@@ -274,8 +270,6 @@ function textureFinishedLoading(image, texture) {
 
 	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 	// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-
-	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 function uploadModelViewMatrixToShader() {
@@ -290,9 +284,9 @@ function draw() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
-	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	// mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
+	// mat4.identity(pwgl.modelViewMatrix);
+	// mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
 	uploadProjectionMatrixToShader();
