@@ -20,7 +20,7 @@
 	varying vec2 vTextureCoordinates;
 
 	void main() {
-		gl_Position = uPMatrix * uMVMatrix *  vec4(aVertexPosition, 1.0);
+		gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 		vTextureCoordinates = aTextureCoordinates;
 	}
 </script>
@@ -161,7 +161,7 @@ function setupBuffers() {
 
 	,	m = 30
 	,	n = 30
-	,	r = 0.5
+	,	r = 2
 
 	,	theta, sinTheta, cosTheta, phi, sinPhi, cosPhi
 	,	x, y, z
@@ -211,7 +211,7 @@ function setupBuffers() {
 		}
 	}
 
-	// Creates texture buffer * loads texture data
+	// Creates texture buffer & loads texture data
 	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
 	
@@ -287,9 +287,9 @@ function draw() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	// mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
-	// mat4.identity(pwgl.modelViewMatrix);
-	// mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.perspective(30, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
+	mat4.identity(pwgl.modelViewMatrix);
+	mat4.lookAt([8, 5, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
 	uploadProjectionMatrixToShader();
