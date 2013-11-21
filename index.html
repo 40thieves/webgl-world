@@ -309,7 +309,7 @@ function draw() {
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
 	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 
-	pwgl.requestId = requestAnimationFrame(draw, canvas);
+	pwgl.requestId = requestAnimFrame(draw, canvas);
 }
 
 function startup() {
