@@ -1,49 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<title>A Simple WebGL Application</title>
+<title>WebGL Coursework</title>
 <meta charset="utf-8">
 
-<script src="lib/webgl-debug.js"></script>
+<script type="text/javascript" src="lib/glMatrix.js"></script>
+<script type="text/javascript" src="lib/webgl-utils.js"></script>
+<script type="text/javascript" src="lib/webgl-debug.js"></script>
 
 <!-- Vertex shader (written in OpenGL ES Shading Language) -->
 <script id="shader-vs" type="x-shader/x-vertex">
 	attribute vec3 aVertexPosition;
+	attribute vec2 aTextureCoordinates;
+
+	uniform mat4 uMVMatrix;
+	uniform mat4 uPMatrix;
+
+	varying vec2 vTextureCoordinates;
 
 	void main() {
-		gl_Position = vec4(aVertexPosition, 1.0);
+		gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+		vTextureCoordinates = aTextureCoordinates;
 	}
 </script>
 
-<!-- Fragment shader (written in OpenGL ES Shading Language) -->
+<!-- Fragment shader (written in Open ES Shading Language) -->
 <script id="shader-fs" type="x-shader/x-fragment">
 	precision mediump float;
 
+	varying vec2 vTextureCoordinates;
+	uniform sampler2D uSampler;
+
 	void main() {
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+		gl_FragColor = texture2D(uSampler, vTextureCoordinates);
 	}
 </script>
 
-<!-- WebGL program -->
+<!-- WebGL Program -->
 <script type="text/javascript">
 var gl
+,	pwgl = {}
 ,	canvas
-,	shaderProgram
-
-,	vertexPositionBuffer
-,	vertexIndexBuffer
 ;
 
-function startup() {
-	canvas = document.getElementById('myGLCanvas');
-	gl = WebGLDebugUtils.makeDebugContext(createGLContext(canvas));
-
-	setupShaders();
-	setupBuffers();
-
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	draw();
-}
+pwgl.ongoingImageLoads = [];
 
 function createGLContext(canvas) {
 	var names = ['webgl', 'experimental-webgl']
@@ -54,11 +54,9 @@ function createGLContext(canvas) {
 		try {
 			context = canvas.getContext(names[i]);
 		}
-		catch(e) {
+		catch (e) {}
 
-		}
-
-		if (context) 
+		if (context)
 			break;
 	}
 
@@ -67,7 +65,7 @@ function createGLContext(canvas) {
 		context.viewportHeight = canvas.height;
 	}
 	else {
-		console.log('Failed to create WebGL context');
+		alert("Could not initialise WebGL, sorry :-(");
 	}
 
 	return context;
@@ -79,11 +77,12 @@ function loadShaderFromDOM(id) {
 	if ( ! shaderScript)
 		return null;
 
-	var shaderSource = '';
-	var currentChild = shaderScript.firstChild;
+	var shaderSource = ''
+	,	currentChild = shaderScript.firstChild
+	;
 
 	while (currentChild) {
-		if (currentChild.nodeType == 3) { // TEXT_NODE
+		if (currentChild.nodeType == 3) { // Text node
 			shaderSource += currentChild.textContent;
 		}
 		currentChild = currentChild.nextSibling;
@@ -104,51 +103,68 @@ function loadShaderFromDOM(id) {
 	gl.compileShader(shader);
 
 	if ( ! gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.log('Shader not compiled');
-		console.log(gl.getShaderInfoLog(shader));
+		alert(gl.getShaderInfoLog(shader));
 		return null;
 	}
 
 	return shader;
 }
 
-function setupShaders() {
-	vertexShader = loadShaderFromDOM('shader-vs');
-	fragmentShader = loadShaderFromDOM('shader-fs');
-
-	shaderProgram = gl.createProgram();
+function setUpShaders() {
+	var vertexShader = loadShaderFromDOM('shader-vs')
+	,	fragmentShader = loadShaderFromDOM('shader-fs')
+	,	shaderProgram = gl.createProgram()
+	;
 
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 
 	gl.linkProgram(shaderProgram);
 	if ( ! gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-		console.log('Failed to set up shaders');
+		alert('Could not initialise shaders');
 	}
 
 	gl.useProgram(shaderProgram);
 
-	shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+	pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+	pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
+	pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+	pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, 'uPMatrix');
+	pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, 'uSampler');
+
+	gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
+	gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
+
+	pwgl.modelViewMatrix = mat4.create();
+	pwgl.projectionMatrix = mat4.create();
+	pwgl.modelViewMatrixStack = [];
 }
 
-function setupBuffers() {
-	vertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexPositionBuffer);
+function pushModelViewMatrix() {
+	var copy = mat4.create(pwgl.modelViewMatrix);
+	pwgl.modelViewMatrixStack.push(copy);
+}
 
-	vertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
+function popModelViewMatrix() {
+	if (pwgl.modelViewMatrixStack.length == 0) {
+		throw 'Error popModelViewMatrix() - Stack was empty';
+	}
+	pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
+}
 
+function setUpBuffers() {
 	var positionData = []
 	,	indexData = []
+	,	textureCoordData = []
 
 	,	m = 30
 	,	n = 30
 	,	r = 0.5
 
-	,	theta, sinTheta, cosTheta, phi, sinPhi,	cosTheta
+	,	theta, sinTheta, cosTheta, phi, sinPhi, cosPhi
 	,	x, y, z
-	,	v1, v2, v3, v4
+	,	u, v
+	,	v1, v2
 	;
 
 	for (var i = 0; i <= m; i++) {
@@ -164,6 +180,12 @@ function setupBuffers() {
 			x = cosPhi * sinTheta;
 			y = cosTheta;
 			z = sinPhi * sinTheta;
+
+			u = 1 - (j / n);
+			v = 1 - (i / m);
+
+			textureCoordData.push(u);
+			textureCoordData.push(v);
 
 			positionData.push(r * x);
 			positionData.push(r * y);
@@ -188,31 +210,140 @@ function setupBuffers() {
 		}
 	}
 
-	// Loads vertex position buffer with data
+	// Creates texture buffer & loads texture data
+	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+
+	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
+
+	// Creates position buffer & loads position data
+	pwgl.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
+
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
 
-	vertexPositionBuffer.itemSize = 3;
-	vertexPositionBuffer.numberOfItems = positionData.length / 3;
+	pwgl.VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
-	// Loads index buffer with data
+	// Creates index buffer & loads index data
+	pwgl.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
+
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
 
-	vertexIndexBuffer.itemSize = 1;
-	vertexIndexBuffer.numberOfItems = indexData.length;
+	pwgl.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
+}
+
+function setUpTextures() {
+	// Earth texture
+	pwgl.earthTexture = gl.createTexture();
+	loadImageForTexture('assets/earth.jpg', pwgl.earthTexture);
+}
+
+function loadImageForTexture(url, texture) {
+	var image = new Image();
+
+	// Sets up callback for when image has finished downloading
+	image.onload = function() {
+		// Removes current image out of ongoingImageLoads array
+		pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
+
+		textureFinishedLoading(image, texture);
+	}
+
+	pwgl.ongoingImageLoads.push(image);
+	image.src = url;
+}
+
+function textureFinishedLoading(image, texture) {
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Flips image to use WebGL axis, instead of DOM axis
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); // Image loaded, texture area 0
+	gl.generateMipmap(gl.TEXTURE_2D); // Generates mipmap levels
+
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+function uploadModelViewMatrixToShader() {
+	gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
+}
+
+function uploadProjectionMatrixToShader() {
+	gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
 function draw() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	gl.clear(gl.COLOR_BUFFER_BIT);
+	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
+	mat4.identity(pwgl.modelViewMatrix);
+	mat4.lookAt([0, 5, -5], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexPositionBuffer);
-	gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
+	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
-	gl.drawElements(gl.TRIANGLES, vertexIndexBuffer.numberOfItems, gl.UNSIGNED_SHORT, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
+	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+
+	uploadProjectionMatrixToShader();
+	uploadModelViewMatrixToShader();
+
+	pwgl.requestId = requestAnimFrame(draw, canvas);
 }
 
+function startup() {
+	canvas = document.getElementById('myGLCanvas');
+	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
+
+	canvas.addEventListener('webglcontextlost', handleContextLost, false);
+	canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+
+	gl = createGLContext(canvas);
+
+	setUpShaders();
+	setUpBuffers();
+	setUpTextures();
+
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.enable(gl.DEPTH_TEST);
+
+	draw();
+}
+
+function handleContextLost(e) {
+	e.preventDefault();
+	cancelRequestAnimFrame(pwgl.requestId);
+
+	// Ignore all ongoing image loads by removing their onload handler
+	for (var i = 0; i < pwgl.ongoingImageLoads.length; i++) {
+		pwgl.ongoingImageLoads[i].onload = undefined;
+	}
+	pwgl.ongoingImageLoads = [];
+}
+
+function handleContextRestored(e) {
+	setUpShaders();
+	setUpBuffers();
+	setUpTextures();
+
+	pwgl.requestId = requestAnimFrame(draw, canvas);
+}
 </script>
 
 </head>
