@@ -54,9 +54,11 @@ pwgl = {
 	globe: {},
 	satellite: {},
 
+	texture: {
+		ongoingImageLoads: []
+	},
 	animation: {},
 
-	ongoingImageLoads: []
 }
 
 function createGLContext(canvas) {
@@ -351,11 +353,11 @@ function setUpSphereBuffers() {
 
 function setUpTextures() {
 	// Earth texture
-	pwgl.earthTexture = gl.createTexture();
-	loadImageForTexture('assets/earth.jpg', pwgl.earthTexture);
+	pwgl.texture.earthTexture = gl.createTexture();
+	loadImageForTexture('assets/earth.jpg', pwgl.texture.earthTexture);
 
-	pwgl.crateTexture = gl.createTexture();
-	loadImageForTexture('assets/crate.gif', pwgl.crateTexture);
+	pwgl.texture.crateTexture = gl.createTexture();
+	loadImageForTexture('assets/crate.gif', pwgl.texture.crateTexture);
 }
 
 function loadImageForTexture(url, texture) {
@@ -364,12 +366,12 @@ function loadImageForTexture(url, texture) {
 	// Sets up callback for when image has finished downloading
 	image.onload = function() {
 		// Removes current image out of ongoingImageLoads array
-		pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
+		pwgl.texture.ongoingImageLoads.splice(pwgl.texture.ongoingImageLoads.indexOf(image), 1);
 
 		textureFinishedLoading(image, texture);
 	}
 
-	pwgl.ongoingImageLoads.push(image);
+	pwgl.texture.ongoingImageLoads.push(image);
 	image.src = url;
 }
 
@@ -412,7 +414,7 @@ function uploadProjectionMatrixToShader() {
 
 function drawCube() {
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.crateTexture);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
@@ -428,7 +430,7 @@ function drawCube() {
 
 function drawSphere() {
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
 	// Draw sphere
@@ -538,10 +540,10 @@ function handleContextLost(e) {
 	cancelRequestAnimFrame(pwgl.requestId);
 
 	// Ignore all ongoing image loads by removing their onload handler
-	for (var i = 0; i < pwgl.ongoingImageLoads.length; i++) {
-		pwgl.ongoingImageLoads[i].onload = undefined;
+	for (var i = 0; i < pwgl.texture.ongoingImageLoads.length; i++) {
+		pwgl.texture.ongoingImageLoads[i].onload = undefined;
 	}
-	pwgl.ongoingImageLoads = [];
+	pwgl.texture.ongoingImageLoads = [];
 }
 
 function handleContextRestored(e) {
