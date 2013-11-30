@@ -169,11 +169,11 @@ function popModelViewMatrix() {
 }
 
 function setUpBuffers() {
-	setUpCubeBuffers();
-	setUpSphereBuffers();
+	setUpSatelliteBuffers();
+	setUpGlobeBuffers();
 }
 
-function setUpCubeBuffers() {
+function setUpSatelliteBuffers() {
 	var positionData = []
 	,	indexData = []
 	,	textureCoordData = []
@@ -265,7 +265,7 @@ function setUpCubeBuffers() {
 	pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
-function setUpSphereBuffers() {
+function setUpGlobeBuffers() {
 	var positionData = []
 	,	indexData = []
 	,	textureCoordData = []
