@@ -172,12 +172,12 @@ function setUpBuffers() {
 }
 
 function setUpCubeBuffers() {
-	var cubePositionData = []
-	,	cubeIndexData = []
-	,	cubeTextureCoordData = []
+	var positionData = []
+	,	indexData = []
+	,	textureCoordData = []
 	;
 
-	cubeTextureCoordData = [
+	textureCoordData = [
 		// Front face
 		0.0, 0.0, //v0
 		1.0, 0.0, //v1
@@ -215,7 +215,7 @@ function setUpCubeBuffers() {
 		0.0, 0.0, //v2
 	];
 
-	cubePositionData = [
+	positionData = [
 		 1.0,  1.0,  1.0, //v0
 		-1.0,  1.0,  1.0, //v1
 		-1.0, -1.0,  1.0, //v2
@@ -226,7 +226,7 @@ function setUpCubeBuffers() {
 		 1.0, -1.0, -1.0, //v7
 	];
 
-	cubeIndexData = [
+	indexData = [
 		0, 1, 2,	0, 2, 3,	// Front face
 		4, 6, 5,	4, 7, 6,	// Back face
 		1, 5, 6,	1, 6, 2,	// Left
@@ -236,37 +236,37 @@ function setUpCubeBuffers() {
 	];
 
 	// Creates texture buffer & loads texture data
-	pwgl.cubeVertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexTextureCoordinateBuffer);
+	pwgl.satellite.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexTextureCoordinateBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeTextureCoordData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
 
-	pwgl.CUBE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
-	pwgl.CUBE_VERTEX_TEX_COORD_BUFF_NUM_ITEMS = cubeTextureCoordData.length / 2;
+	pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.satellite.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 
 	// Creates position buffer & loads position data
-	pwgl.cubeVertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexPositionBuffer);
+	pwgl.satellite.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubePositionData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
 
-	pwgl.CUBE_VERTEX_POS_BUFF_ITEM_SIZE = 3;
-	pwgl.CUBE_VERTEX_POS_BUFF_NUM_ITEMS = cubePositionData.length / 3;
+	pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.satellite.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
 	// Creates index buffer & loads index data
-	pwgl.cubeVertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.cubeVertexIndexBuffer);
+	pwgl.satellite.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satellite.vertexIndexBuffer);
 
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeIndexData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
 
-	pwgl.CUBE_VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
-	pwgl.CUBE_VERTEX_INDEX_BUFF_NUM_ITEMS = cubeIndexData.length;
+	pwgl.satellite.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
 function setUpSphereBuffers() {
-	var spherePositionData = []
-	,	sphereIndexData = []
-	,	sphereTextureCoordData = []
+	var positionData = []
+	,	indexData = []
+	,	textureCoordData = []
 
 	,	m = 30
 	,	n = 30
@@ -295,12 +295,12 @@ function setUpSphereBuffers() {
 			u = 1 - (j / n);
 			v = 1 - (i / m);
 
-			sphereTextureCoordData.push(u);
-			sphereTextureCoordData.push(v);
+			textureCoordData.push(u);
+			textureCoordData.push(v);
 
-			spherePositionData.push(r * x);
-			spherePositionData.push(r * y);
-			spherePositionData.push(r * z);
+			positionData.push(r * x);
+			positionData.push(r * y);
+			positionData.push(r * z);
 		}
 	}
 
@@ -310,43 +310,43 @@ function setUpSphereBuffers() {
 			v2 = v1 + n + 1;
 
 			// Indices of first triangle
-			sphereIndexData.push(v1);
-			sphereIndexData.push(v2);
-			sphereIndexData.push(v1 + 1);
+			indexData.push(v1);
+			indexData.push(v2);
+			indexData.push(v1 + 1);
 
 			// Indices of second triangle
-			sphereIndexData.push(v2);
-			sphereIndexData.push(v2 + 1);
-			sphereIndexData.push(v1 + 1);
+			indexData.push(v2);
+			indexData.push(v2 + 1);
+			indexData.push(v1 + 1);
 		}
 	}
 
 	// Creates texture buffer & loads texture data
-	pwgl.sphereVertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexTextureCoordinateBuffer);
+	pwgl.globe.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexTextureCoordinateBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereTextureCoordData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
 
-	pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
-	pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_NUM_ITEMS = sphereTextureCoordData.length / 2;
+	pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.globe.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 
 	// Creates position buffer & loads position data
-	pwgl.sphereVertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexPositionBuffer);
+	pwgl.globe.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(spherePositionData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
 
-	pwgl.SPHERE_VERTEX_POS_BUFF_ITEM_SIZE = 3;
-	pwgl.SPHERE_VERTEX_POS_BUFF_NUM_ITEMS = spherePositionData.length / 3;
+	pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.globe.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
 	// Creates index buffer & loads index data
-	pwgl.sphereVertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.sphereVertexIndexBuffer);
+	pwgl.globe.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.globe.vertexIndexBuffer);
 
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphereIndexData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
 
-	pwgl.SPHERE_VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
-	pwgl.SPHERE_VERTEX_INDEX_BUFF_NUM_ITEMS = sphereIndexData.length;
+	pwgl.globe.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
 function setUpTextures() {
@@ -415,15 +415,15 @@ function drawCube() {
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.crateTexture);
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.CUBE_VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.CUBE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.cubeVertexIndexBuffer);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satellite.vertexIndexBuffer);
 
-	gl.drawElements(gl.TRIANGLES, pwgl.CUBE_VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.TRIANGLES, pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
 
 function drawSphere() {
@@ -432,15 +432,15 @@ function drawSphere() {
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
 
 	// Draw sphere
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.SPHERE_VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.sphereVertexIndexBuffer);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.globe.vertexIndexBuffer);
 
-	gl.drawElements(gl.TRIANGLES, pwgl.SPHERE_VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.TRIANGLES, pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
 
 function draw(currentTime) {
@@ -457,7 +457,7 @@ function draw(currentTime) {
 
 	transZ = 0;
 
-	// Draw cube
+	// Draw satellite
 	pushModelViewMatrix();
 
 	if (pwgl.animation.startTime === undefined)
