@@ -454,11 +454,6 @@ function draw(currentTime) {
 	uploadProjectionMatrixToShader();
 	uploadModelViewMatrixToShader();
 
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
-	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
-
-	transZ = 0;
-
 	// Draw satellite
 	pushModelViewMatrix();
 
@@ -480,6 +475,9 @@ function draw(currentTime) {
 
 	// Draw sphere
 	pushModelViewMatrix();
+
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
+	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
 
 	uploadModelViewMatrixToShader();
 
@@ -509,7 +507,7 @@ function init() {
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([5, 8, -8], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 }
 
 function startup() {
@@ -575,8 +573,8 @@ function handleMouseWheel(e) {
 	}
 
 	// Prevent zooming too far in, through model
-	if (transZ < -3)
-		transZ = -3;
+	if (transZ < -5)
+		transZ = -5;
 
 	// Prevent zooming too far out, so model is out of view frustrum
 	if (transZ > 94)
@@ -597,8 +595,8 @@ function handleMouseMove(e) {
 	;
 
 	// Calculate rotation matrices
-	mat4.rotate(rotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
-	mat4.rotate(rotationMatrix, -degToRad(deltaY / 10), [1, 0, 0]);
+	mat4.rotate(rotationMatrix, degToRad(deltaX / 5), [0, 1, 0]);
+	mat4.rotate(rotationMatrix, -degToRad(deltaY / 5), [1, 0, 0]);
 
 	lastMouseX = newMouseX;
 	lastMouseY = newMouseY;
