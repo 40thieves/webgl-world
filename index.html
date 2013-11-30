@@ -58,8 +58,8 @@ pwgl = {
 		ongoingImageLoads: []
 	},
 	animation: {},
-
-}
+	shader: {}
+	}
 
 function createGLContext(canvas) {
 	var names = ['webgl', 'experimental-webgl']
@@ -142,14 +142,14 @@ function setUpShaders() {
 
 	gl.useProgram(shaderProgram);
 
-	pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-	pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
-	pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
-	pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, 'uPMatrix');
-	pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, 'uSampler');
+	pwgl.shader.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+	pwgl.shader.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
+	pwgl.shader.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+	pwgl.shader.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, 'uPMatrix');
+	pwgl.shader.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, 'uSampler');
 
-	gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
-	gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
+	gl.enableVertexAttribArray(pwgl.shader.vertexPositionAttributeLoc);
+	gl.enableVertexAttribArray(pwgl.shader.vertexTextureAttributeLoc);
 
 	pwgl.modelViewMatrix = mat4.create();
 	pwgl.projectionMatrix = mat4.create();
@@ -405,23 +405,23 @@ function popModelViewMatrix() {
 }
 
 function uploadModelViewMatrixToShader() {
-	gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
+	gl.uniformMatrix4fv(pwgl.shader.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
 }
 
 function uploadProjectionMatrixToShader() {
-	gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
+	gl.uniformMatrix4fv(pwgl.shader.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
 function drawSatellite() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
-	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
+	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(pwgl.shader.vertexPositionAttributeLoc, pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(pwgl.shader.vertexTextureAttributeLoc, pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satellite.vertexIndexBuffer);
 
@@ -431,14 +431,14 @@ function drawSatellite() {
 function drawGlobe() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
-	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
+	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
 
 	// Draw sphere
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(pwgl.shader.vertexPositionAttributeLoc, pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(pwgl.shader.vertexTextureAttributeLoc, pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.globe.vertexIndexBuffer);
 
