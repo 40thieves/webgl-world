@@ -574,13 +574,13 @@ function handleMouseWheel(e) {
 		transZ -= -e.deltaY;
 	}
 
-	// // Prevent zooming too far in, through model
-	// if (transZ < -3)
-	// 	transZ = -3;
+	// Prevent zooming too far in, through model
+	if (transZ < -3)
+		transZ = -3;
 
-	// // Prevent zooming too far out, so model is out of view frustrum
-	// if (transZ > 94)
-	// 	transZ = 94;
+	// Prevent zooming too far out, so model is out of view frustrum
+	if (transZ > 94)
+		transZ = 94;
 }
 
 function handleMouseMove(e) {
