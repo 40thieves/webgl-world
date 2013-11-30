@@ -412,7 +412,7 @@ function uploadProjectionMatrixToShader() {
 	gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
-function drawCube() {
+function drawSatellite() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
@@ -428,7 +428,7 @@ function drawCube() {
 	gl.drawElements(gl.TRIANGLES, pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
 
-function drawSphere() {
+function drawGlobe() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
 	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
@@ -474,7 +474,7 @@ function draw(currentTime) {
 
 	uploadModelViewMatrixToShader();
 
-	drawCube();
+	drawSatellite();
 
 	popModelViewMatrix();
 
@@ -483,7 +483,7 @@ function draw(currentTime) {
 
 	uploadModelViewMatrixToShader();
 
-	drawSphere();
+	drawGlobe();
 
 	popModelViewMatrix();
 }
