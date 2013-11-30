@@ -160,9 +160,106 @@ function popModelViewMatrix() {
 }
 
 function setUpBuffers() {
-	var positionData = []
-	,	indexData = []
-	,	textureCoordData = []
+	setUpCubeBuffers();
+	setUpSphereBuffers();
+}
+
+function setUpCubeBuffers() {
+	var cubePositionData = []
+	,	cubeIndexData = []
+	,	cubeTextureCoordData = []
+	;
+
+	cubeTextureCoordData = [
+		// Front face
+		0.0, 0.0, //v0
+		1.0, 0.0, //v1
+		1.0, 1.0, //v2
+		0.0, 1.0, //v3
+
+		// Back face
+		0.0, 1.0, //v4
+		1.0, 1.0, //v5
+		1.0, 0.0, //v6
+		0.0, 0.0, //v7
+
+		// Left face
+		0.0, 1.0, //v1
+		1.0, 1.0, //v5
+		1.0, 0.0, //v6
+		0.0, 0.0, //v2
+
+		// Right face
+		0.0, 1.0, //v0
+		1.0, 1.0, //v3
+		1.0, 0.0, //v7
+		0.0, 0.0, //v4
+
+		// Top face
+		0.0, 1.0, //v0
+		1.0, 1.0, //v4
+		1.0, 0.0, //v5
+		0.0, 0.0, //v1
+
+		// Bottom face
+		0.0, 1.0, //v3
+		1.0, 1.0, //v7
+		1.0, 0.0, //v6
+		0.0, 0.0, //v2
+	];
+
+	cubePositionData = [
+		 1.0,  1.0,  1.0, //v0
+		-1.0,  1.0,  1.0, //v1
+		-1.0, -1.0,  1.0, //v2
+		 1.0, -1.0,  1.0, //v3
+		 1.0,  1.0, -1.0, //v4
+		-1.0,  1.0, -1.0, //v5
+		-1.0, -1.0, -1.0, //v6
+		 1.0, -1.0, -1.0, //v7
+	];
+
+	cubeIndexData = [
+		0, 1, 2,	0, 2, 3,	// Front face
+		4, 6, 5,	4, 7, 6,	// Back face
+		1, 5, 6,	1, 6, 2,	// Left
+		0, 3, 7,	0, 7, 4,	// Right
+		0, 5, 1,	0, 4, 5,	// Top
+		3, 2, 6,	3, 6, 7 	// Bottom
+	];
+
+	// Creates texture buffer & loads texture data
+	pwgl.cubeVertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexTextureCoordinateBuffer);
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeTextureCoordData), gl.STATIC_DRAW);
+
+	pwgl.CUBE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.CUBE_VERTEX_TEX_COORD_BUFF_NUM_ITEMS = cubeTextureCoordData.length / 2;
+
+	// Creates position buffer & loads position data
+	pwgl.cubeVertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexPositionBuffer);
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubePositionData), gl.STATIC_DRAW);
+
+	pwgl.CUBE_VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.CUBE_VERTEX_POS_BUFF_NUM_ITEMS = cubePositionData.length / 3;
+
+	// Creates index buffer & loads index data
+	pwgl.cubeVertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.cubeVertexIndexBuffer);
+
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeIndexData), gl.STATIC_DRAW);
+
+	pwgl.CUBE_VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.CUBE_VERTEX_INDEX_BUFF_NUM_ITEMS = cubeIndexData.length;
+}
+
+function setUpSphereBuffers() {
+	var spherePositionData = []
+	,	sphereIndexData = []
+	,	sphereTextureCoordData = []
 
 	,	m = 30
 	,	n = 30
@@ -191,12 +288,12 @@ function setUpBuffers() {
 			u = 1 - (j / n);
 			v = 1 - (i / m);
 
-			textureCoordData.push(u);
-			textureCoordData.push(v);
+			sphereTextureCoordData.push(u);
+			sphereTextureCoordData.push(v);
 
-			positionData.push(r * x);
-			positionData.push(r * y);
-			positionData.push(r * z);
+			spherePositionData.push(r * x);
+			spherePositionData.push(r * y);
+			spherePositionData.push(r * z);
 		}
 	}
 
@@ -206,49 +303,52 @@ function setUpBuffers() {
 			v2 = v1 + n + 1;
 
 			// Indices of first triangle
-			indexData.push(v1);
-			indexData.push(v2);
-			indexData.push(v1 + 1);
+			sphereIndexData.push(v1);
+			sphereIndexData.push(v2);
+			sphereIndexData.push(v1 + 1);
 
 			// Indices of second triangle
-			indexData.push(v2);
-			indexData.push(v2 + 1);
-			indexData.push(v1 + 1);
+			sphereIndexData.push(v2);
+			sphereIndexData.push(v2 + 1);
+			sphereIndexData.push(v1 + 1);
 		}
 	}
 
 	// Creates texture buffer & loads texture data
-	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
+	pwgl.sphereVertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexTextureCoordinateBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sphereTextureCoordData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
-	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
+	pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_NUM_ITEMS = sphereTextureCoordData.length / 2;
 
 	// Creates position buffer & loads position data
-	pwgl.vertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
+	pwgl.sphereVertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexPositionBuffer);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(spherePositionData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_POS_BUFF_ITEM_SIZE = 3;
-	pwgl.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
+	pwgl.SPHERE_VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.SPHERE_VERTEX_POS_BUFF_NUM_ITEMS = spherePositionData.length / 3;
 
 	// Creates index buffer & loads index data
-	pwgl.vertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
+	pwgl.sphereVertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.sphereVertexIndexBuffer);
 
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sphereIndexData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
-	pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
+	pwgl.SPHERE_VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.SPHERE_VERTEX_INDEX_BUFF_NUM_ITEMS = sphereIndexData.length;
 }
 
 function setUpTextures() {
 	// Earth texture
 	pwgl.earthTexture = gl.createTexture();
 	loadImageForTexture('assets/earth.jpg', pwgl.earthTexture);
+
+	pwgl.crateTexture = gl.createTexture();
+	loadImageForTexture('assets/crate.gif', pwgl.crateTexture);
 }
 
 function loadImageForTexture(url, texture) {
@@ -283,6 +383,18 @@ function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
 
+function pushModelViewMatrix() {
+	var cache = mat4.create(pwgl.modelViewMatrix);
+	pwgl.modelViewMatrixStack.push(cache);
+}
+
+function popModelViewMatrix() {
+	if (pwgl.modelViewMatrixStack.length == 0) {
+		throw 'Error - ModelView Stack empty';
+	}
+	pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
+}
+
 function uploadModelViewMatrixToShader() {
 	gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
 }
@@ -291,32 +403,73 @@ function uploadProjectionMatrixToShader() {
 	gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
+function drawCube() {
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.crateTexture);
+	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.CUBE_VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.cubeVertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.CUBE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.cubeVertexIndexBuffer);
+
+	gl.drawElements(gl.TRIANGLES, pwgl.CUBE_VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+}
+
+function drawSphere() {
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
+	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
+
+	// Draw sphere
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.SPHERE_VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.sphereVertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.SPHERE_VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.sphereVertexIndexBuffer);
+
+	gl.drawElements(gl.TRIANGLES, pwgl.SPHERE_VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+}
+
 function draw() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, -6], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
-
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ]);
-	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix);
-
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
-	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
-
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
-	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+	mat4.lookAt([0, 0, -8], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 
 	uploadProjectionMatrixToShader();
 	uploadModelViewMatrixToShader();
+
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
+	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
+
+	// Draw cube
+	pushModelViewMatrix();
+
+	mat4.translate(pwgl.modelViewMatrix, [-2.5, 0, 0], pwgl.modelViewMatrix);
+	mat4.scale(pwgl.modelViewMatrix, [0.1, 0.1, 0.1], pwgl.modelViewMatrix);
+
+	uploadModelViewMatrixToShader();
+
+	drawCube();
+
+	popModelViewMatrix();
+
+	// Draw sphere
+	pushModelViewMatrix();
+
+	uploadModelViewMatrixToShader();
+
+	drawSphere();
+
+	popModelViewMatrix();
 
 	pwgl.requestId = requestAnimFrame(draw, canvas);
 }
@@ -333,7 +486,7 @@ function startup() {
 	canvas.addEventListener('mousedown', handleMouseDown, false);
 	canvas.addEventListener('mouseup', handleMouseUp, false);
 	canvas.addEventListener('mousemove', handleMouseMove, false);
-	canvas.addEventListener('wheel', handleMouseWheel, false);
+	canvas.addEventListener('wheel', handleMouseWheel, false); // Many handlers for scroll, different browsers
 	canvas.addEventListener('mousewheel', handleMouseWheel, false);
 	canvas.addEventListener('DOMMouseScroll', handleMouseWheel, false);
 
@@ -343,7 +496,7 @@ function startup() {
 	setUpBuffers();
 	setUpTextures();
 
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clearColor(1.0, 1.0, 1.0, 1.0);
 	gl.enable(gl.DEPTH_TEST);
 
 	draw();
@@ -390,13 +543,13 @@ function handleMouseWheel(e) {
 		transZ -= -e.deltaY;
 	}
 
-	// Prevent zooming too far in, through model
-	if (transZ < -3)
-		transZ = -3;
+	// // Prevent zooming too far in, through model
+	// if (transZ < -3)
+	// 	transZ = -3;
 
-	// Prevent zooming too far out, so model is out of view frustrum
-	if (transZ > 94)
-		transZ = 94;
+	// // Prevent zooming too far out, so model is out of view frustrum
+	// if (transZ > 94)
+	// 	transZ = 94;
 }
 
 function handleMouseMove(e) {
