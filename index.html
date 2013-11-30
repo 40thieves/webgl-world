@@ -44,6 +44,7 @@ var gl
 
 ,	mousedown = false
 ,	lastMouseX, lastMouseY = 0
+,	transZ = 0
 ,	rotationMatrix = mat4.create()
 ;
 
@@ -296,7 +297,9 @@ function draw() {
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 5, -5], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.lookAt([0, 0, -6], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ]);
 	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix);
 
 	gl.activeTexture(gl.TEXTURE0);
@@ -322,12 +325,17 @@ function startup() {
 	canvas = document.getElementById('myGLCanvas');
 	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
 
+	// WebGL event handlers
 	canvas.addEventListener('webglcontextlost', handleContextLost, false);
 	canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
 
+	// Mouse event handlers
 	canvas.addEventListener('mousedown', handleMouseDown, false);
 	canvas.addEventListener('mouseup', handleMouseUp, false);
 	canvas.addEventListener('mousemove', handleMouseMove, false);
+	canvas.addEventListener('wheel', handleMouseWheel, false);
+	canvas.addEventListener('mousewheel', handleMouseWheel, false);
+	canvas.addEventListener('DOMMouseScroll', handleMouseWheel, false);
 
 	gl = createGLContext(canvas);
 
@@ -370,6 +378,27 @@ function handleMouseUp(e) {
 	mousedown = false;
 }
 
+function handleMouseWheel(e) {
+	e.preventDefault();
+
+	// Webkit uses wheelDelta
+	if (e.wheelDelta) {
+		transZ -= 1 / 120 * e.wheelDelta;
+	}
+	// Other browers use detail
+	else {
+		transZ -= -e.deltaY;
+	}
+
+	// Prevent zooming too far in, through model
+	if (transZ < -3)
+		transZ = -3;
+
+	// Prevent zooming too far out, so model is out of view frustrum
+	if (transZ > 94)
+		transZ = 94;
+}
+
 function handleMouseMove(e) {
 	// Return if not dragging
 	if ( ! mousedown)
@@ -384,8 +413,8 @@ function handleMouseMove(e) {
 	;
 
 	// Calculate rotation matrices
-	mat4.rotate(rotationMatrix, degToRad(deltaX / 5), [0, 1, 0]);
-	mat4.rotate(rotationMatrix, -degToRad(deltaY / 2), [1, 0, 0]);
+	mat4.rotate(rotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
+	mat4.rotate(rotationMatrix, -degToRad(deltaY / 10), [1, 0, 0]);
 
 	lastMouseX = newMouseX;
 	lastMouseY = newMouseY;
