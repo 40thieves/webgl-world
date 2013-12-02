@@ -453,6 +453,12 @@ function draw(currentTime) {
 	if (currentTime === undefined)
 		currentTime = Date.now();
 
+	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
+	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
+	transZ = 0;
+
 	uploadProjectionMatrixToShader();
 	uploadModelViewMatrixToShader();
 
@@ -477,9 +483,6 @@ function draw(currentTime) {
 
 	// Draw sphere
 	pushModelViewMatrix();
-
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
-	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
 
 	uploadModelViewMatrixToShader();
 
@@ -509,7 +512,6 @@ function init() {
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 }
 
 function startup() {
