@@ -39,18 +39,30 @@
 <!-- WebGL Program -->
 <script type="text/javascript">
 var gl
-,	pwgl = {}
 ,	canvas
+,	pwgl
 
-,	mousedown = false
-,	lastMouseX, lastMouseY = 0
+,	mousedown
 ,	transZ = 0
-,	rotationMatrix = mat4.create()
+,	xRotation = 0
+,	yRotation = 0
+,	lastMouseX = 0
+,	lastMouseY = 0
 ;
 
-mat4.identity(rotationMatrix);
+pwgl = {
+	globe: {},
+	satellite: {},
 
-pwgl.ongoingImageLoads = [];
+	texture: {
+		ongoingImageLoads: []
+	},
+	animation: {},
+	shader: {},
+	interaction: {
+		listOfPressedKeys: []
+	}
+};
 
 function createGLContext(canvas) {
 	var names = ['webgl', 'experimental-webgl']
@@ -133,14 +145,14 @@ function setUpShaders() {
 
 	gl.useProgram(shaderProgram);
 
-	pwgl.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-	pwgl.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
-	pwgl.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
-	pwgl.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, 'uPMatrix');
-	pwgl.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, 'uSampler');
+	pwgl.shader.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+	pwgl.shader.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
+	pwgl.shader.uniformMVMatrixLoc = gl.getUniformLocation(shaderProgram, 'uMVMatrix');
+	pwgl.shader.uniformProjMatrixLoc = gl.getUniformLocation(shaderProgram, 'uPMatrix');
+	pwgl.shader.uniformSamplerLoc = gl.getUniformLocation(shaderProgram, 'uSampler');
 
-	gl.enableVertexAttribArray(pwgl.vertexPositionAttributeLoc);
-	gl.enableVertexAttribArray(pwgl.vertexTextureAttributeLoc);
+	gl.enableVertexAttribArray(pwgl.shader.vertexPositionAttributeLoc);
+	gl.enableVertexAttribArray(pwgl.shader.vertexTextureAttributeLoc);
 
 	pwgl.modelViewMatrix = mat4.create();
 	pwgl.projectionMatrix = mat4.create();
@@ -160,6 +172,103 @@ function popModelViewMatrix() {
 }
 
 function setUpBuffers() {
+	setUpSatelliteBuffers();
+	setUpGlobeBuffers();
+}
+
+function setUpSatelliteBuffers() {
+	var positionData = []
+	,	indexData = []
+	,	textureCoordData = []
+	;
+
+	textureCoordData = [
+		// Front face
+		0.0, 0.0, //v0
+		1.0, 0.0, //v1
+		1.0, 1.0, //v2
+		0.0, 1.0, //v3
+
+		// Back face
+		0.0, 1.0, //v4
+		1.0, 1.0, //v5
+		1.0, 0.0, //v6
+		0.0, 0.0, //v7
+
+		// Left face
+		0.0, 1.0, //v1
+		1.0, 1.0, //v5
+		1.0, 0.0, //v6
+		0.0, 0.0, //v2
+
+		// Right face
+		0.0, 1.0, //v0
+		1.0, 1.0, //v3
+		1.0, 0.0, //v7
+		0.0, 0.0, //v4
+
+		// Top face
+		0.0, 1.0, //v0
+		1.0, 1.0, //v4
+		1.0, 0.0, //v5
+		0.0, 0.0, //v1
+
+		// Bottom face
+		0.0, 1.0, //v3
+		1.0, 1.0, //v7
+		1.0, 0.0, //v6
+		0.0, 0.0, //v2
+	];
+
+	positionData = [
+		 1.0,  1.0,  1.0, //v0
+		-1.0,  1.0,  1.0, //v1
+		-1.0, -1.0,  1.0, //v2
+		 1.0, -1.0,  1.0, //v3
+		 1.0,  1.0, -1.0, //v4
+		-1.0,  1.0, -1.0, //v5
+		-1.0, -1.0, -1.0, //v6
+		 1.0, -1.0, -1.0, //v7
+	];
+
+	indexData = [
+		0, 1, 2,	0, 2, 3,	// Front face
+		4, 6, 5,	4, 7, 6,	// Back face
+		1, 5, 6,	1, 6, 2,	// Left
+		0, 3, 7,	0, 7, 4,	// Right
+		0, 5, 1,	0, 4, 5,	// Top
+		3, 2, 6,	3, 6, 7 	// Bottom
+	];
+
+	// Creates texture buffer & loads texture data
+	pwgl.satellite.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexTextureCoordinateBuffer);
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+
+	pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.satellite.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
+
+	// Creates position buffer & loads position data
+	pwgl.satellite.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
+
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
+
+	pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.satellite.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
+
+	// Creates index buffer & loads index data
+	pwgl.satellite.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satellite.vertexIndexBuffer);
+
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+
+	pwgl.satellite.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
+}
+
+function setUpGlobeBuffers() {
 	var positionData = []
 	,	indexData = []
 	,	textureCoordData = []
@@ -218,37 +327,40 @@ function setUpBuffers() {
 	}
 
 	// Creates texture buffer & loads texture data
-	pwgl.vertexTextureCoordinateBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
+	pwgl.globe.vertexTextureCoordinateBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexTextureCoordinateBuffer);
 
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
-	pwgl.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
+	pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE = 2;
+	pwgl.globe.VERTEX_TEX_COORD_BUFF_NUM_ITEMS = textureCoordData.length / 2;
 
 	// Creates position buffer & loads position data
-	pwgl.vertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
+	pwgl.globe.vertexPositionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
 
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_POS_BUFF_ITEM_SIZE = 3;
-	pwgl.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
+	pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE = 3;
+	pwgl.globe.VERTEX_POS_BUFF_NUM_ITEMS = positionData.length / 3;
 
 	// Creates index buffer & loads index data
-	pwgl.vertexIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
+	pwgl.globe.vertexIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.globe.vertexIndexBuffer);
 
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
 
-	pwgl.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
-	pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
+	pwgl.globe.VERTEX_INDEX_BUFF_ITEM_SIZE = 1;
+	pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
 function setUpTextures() {
 	// Earth texture
-	pwgl.earthTexture = gl.createTexture();
-	loadImageForTexture('assets/earth.jpg', pwgl.earthTexture);
+	pwgl.texture.earthTexture = gl.createTexture();
+	loadImageForTexture('assets/earth.jpg', pwgl.texture.earthTexture);
+
+	pwgl.texture.crateTexture = gl.createTexture();
+	loadImageForTexture('assets/crate.gif', pwgl.texture.crateTexture);
 }
 
 function loadImageForTexture(url, texture) {
@@ -257,12 +369,12 @@ function loadImageForTexture(url, texture) {
 	// Sets up callback for when image has finished downloading
 	image.onload = function() {
 		// Removes current image out of ongoingImageLoads array
-		pwgl.ongoingImageLoads.splice(pwgl.ongoingImageLoads.indexOf(image), 1);
+		pwgl.texture.ongoingImageLoads.splice(pwgl.texture.ongoingImageLoads.indexOf(image), 1);
 
 		textureFinishedLoading(image, texture);
 	}
 
-	pwgl.ongoingImageLoads.push(image);
+	pwgl.texture.ongoingImageLoads.push(image);
 	image.src = url;
 }
 
@@ -283,42 +395,129 @@ function degToRad(degrees) {
 	return degrees * Math.PI / 180;
 }
 
+function pushModelViewMatrix() {
+	var cache = mat4.create(pwgl.modelViewMatrix);
+	pwgl.modelViewMatrixStack.push(cache);
+}
+
+function popModelViewMatrix() {
+	if (pwgl.modelViewMatrixStack.length == 0) {
+		throw 'Error - ModelView Stack empty';
+	}
+	pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
+}
+
 function uploadModelViewMatrixToShader() {
-	gl.uniformMatrix4fv(pwgl.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
+	gl.uniformMatrix4fv(pwgl.shader.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
 }
 
 function uploadProjectionMatrixToShader() {
-	gl.uniformMatrix4fv(pwgl.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
+	gl.uniformMatrix4fv(pwgl.shader.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
-function draw() {
+function drawSatellite() {
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
+	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.shader.vertexPositionAttributeLoc, pwgl.satellite.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.shader.vertexTextureAttributeLoc, pwgl.satellite.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.satellite.vertexIndexBuffer);
+
+	gl.drawElements(gl.TRIANGLES, pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+}
+
+function drawGlobe() {
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
+	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
+
+	// Draw sphere
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
+	gl.vertexAttribPointer(pwgl.shader.vertexPositionAttributeLoc, pwgl.globe.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexTextureCoordinateBuffer);
+	gl.vertexAttribPointer(pwgl.shader.vertexTextureAttributeLoc, pwgl.globe.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.globe.vertexIndexBuffer);
+
+	gl.drawElements(gl.TRIANGLES, pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
+}
+
+function draw(currentTime) {
+	pwgl.requestId = requestAnimFrame(draw);
+
+	if (currentTime === undefined)
+		currentTime = Date.now();
+
+	checkPressedDownKeys();
+
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix);
+	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
+	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
+
+	yRotation = xRotation = transZ = 0;
+
+	uploadProjectionMatrixToShader();
+	uploadModelViewMatrixToShader();
+
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	// Draw satellite
+	pushModelViewMatrix();
+
+	if (pwgl.animation.startTime === undefined)
+		pwgl.animation.startTime = currentTime;
+
+	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / 4000 * 2 * Math.PI % (2 * Math.PI);
+	pwgl.satellite.x = Math.cos(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
+	pwgl.satellite.z = Math.sin(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
+
+	mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
+	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
+
+	uploadModelViewMatrixToShader();
+
+	drawSatellite();
+
+	popModelViewMatrix();
+
+	// Draw sphere
+	pushModelViewMatrix();
+
+	uploadModelViewMatrixToShader();
+
+	drawGlobe();
+
+	popModelViewMatrix();
+}
+
+function init() {
+	setUpShaders();
+	setUpBuffers();
+	setUpTextures();
+
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.enable(gl.DEPTH_TEST);
+
+	pwgl.satellite.x = 0.0;
+	pwgl.satellite.y = 0.0;
+	pwgl.satellite.z = 0.0;
+	pwgl.satellite.circleRadius = 3.0;
+	pwgl.satellite.angle = 0;
+
+	pwgl.animation.startTime = undefined;
+
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, -6], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
-
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ]);
-	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix);
-
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, pwgl.earthTexture);
-	gl.uniform1i(pwgl.uniformSamplerLoc, 0);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexPositionBuffer);
-	gl.vertexAttribPointer(pwgl.vertexPositionAttributeLoc, pwgl.VERTEX_POS_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.vertexTextureCoordinateBuffer);
-	gl.vertexAttribPointer(pwgl.vertexTextureAttributeLoc, pwgl.VERTEX_TEX_COORD_BUFF_ITEM_SIZE, gl.FLOAT, false, 0, 0);
-
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, pwgl.vertexIndexBuffer);
-	gl.drawElements(gl.TRIANGLES, pwgl.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
-
-	uploadProjectionMatrixToShader();
-	uploadModelViewMatrixToShader();
-
-	pwgl.requestId = requestAnimFrame(draw, canvas);
+	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 }
 
 function startup() {
@@ -333,18 +532,16 @@ function startup() {
 	canvas.addEventListener('mousedown', handleMouseDown, false);
 	canvas.addEventListener('mouseup', handleMouseUp, false);
 	canvas.addEventListener('mousemove', handleMouseMove, false);
-	canvas.addEventListener('wheel', handleMouseWheel, false);
+	canvas.addEventListener('wheel', handleMouseWheel, false); // Many handlers for scroll, different browsers
 	canvas.addEventListener('mousewheel', handleMouseWheel, false);
 	canvas.addEventListener('DOMMouseScroll', handleMouseWheel, false);
 
+	document.addEventListener('keydown', handleKeyDown, false);
+	document.addEventListener('keyup', handleKeyUp, false);
+
 	gl = createGLContext(canvas);
 
-	setUpShaders();
-	setUpBuffers();
-	setUpTextures();
-
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl.enable(gl.DEPTH_TEST);
+	init();
 
 	draw();
 }
@@ -354,16 +551,14 @@ function handleContextLost(e) {
 	cancelRequestAnimFrame(pwgl.requestId);
 
 	// Ignore all ongoing image loads by removing their onload handler
-	for (var i = 0; i < pwgl.ongoingImageLoads.length; i++) {
-		pwgl.ongoingImageLoads[i].onload = undefined;
+	for (var i = 0; i < pwgl.texture.ongoingImageLoads.length; i++) {
+		pwgl.texture.ongoingImageLoads[i].onload = undefined;
 	}
-	pwgl.ongoingImageLoads = [];
+	pwgl.texture.ongoingImageLoads = [];
 }
 
 function handleContextRestored(e) {
-	setUpShaders();
-	setUpBuffers();
-	setUpTextures();
+	init();
 
 	pwgl.requestId = requestAnimFrame(draw, canvas);
 }
@@ -391,8 +586,8 @@ function handleMouseWheel(e) {
 	}
 
 	// Prevent zooming too far in, through model
-	if (transZ < -3)
-		transZ = -3;
+	if (transZ < -5)
+		transZ = -5;
 
 	// Prevent zooming too far out, so model is out of view frustrum
 	if (transZ > 94)
@@ -400,24 +595,43 @@ function handleMouseWheel(e) {
 }
 
 function handleMouseMove(e) {
-	// Return if not dragging
 	if ( ! mousedown)
 		return;
 
-	var newMouseX = e.clientX
-	,	newMouseY = e.clientY
+	xRotation = -lastMouseY + e.clientY;
+	yRotation = -lastMouseX + e.clientX;
 
-	// Calculate distance travelled by mouse during drag
-	,	deltaX = newMouseX - lastMouseX
-	,	deltaY = newMouseY - lastMouseY
-	;
+	lastMouseX = e.clientX;
+	lastMouseY = e.clientY;
+}
 
-	// Calculate rotation matrices
-	mat4.rotate(rotationMatrix, degToRad(deltaX / 10), [0, 1, 0]);
-	mat4.rotate(rotationMatrix, -degToRad(deltaY / 10), [1, 0, 0]);
+function handleKeyDown(e) {
+	if (e.keyCode == 28 || e.keyCode == 40)
+		e.preventDefault();
 
-	lastMouseX = newMouseX;
-	lastMouseY = newMouseY;
+	pwgl.interaction.listOfPressedKeys[e.keyCode] = true;
+}
+
+function handleKeyUp(e) {
+	if (e.keyCode == 38 || e.keyCode == 40)
+		e.preventDefault();
+
+	pwgl.interaction.listOfPressedKeys[e.keyCode] = false;
+}
+
+function checkPressedDownKeys() {
+	// Up arrow, increase radius of orbit
+	if (pwgl.interaction.listOfPressedKeys[38]) {
+		pwgl.satellite.circleRadius += 0.1;
+	}
+
+	// Down arrow, decrease radius of orbit
+	if (pwgl.interaction.listOfPressedKeys[40]) {
+		if (pwgl.satellite.circleRadius < 2.2)
+			return;
+
+		pwgl.satellite.circleRadius -= 0.1;
+	}
 }
 </script>
 
