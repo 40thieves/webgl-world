@@ -58,8 +58,11 @@ pwgl = {
 		ongoingImageLoads: []
 	},
 	animation: {},
-	shader: {}
+	shader: {},
+	interaction: {
+		listOfPressedKeys: []
 	}
+};
 
 function createGLContext(canvas) {
 	var names = ['webgl', 'experimental-webgl']
@@ -451,6 +454,8 @@ function draw(currentTime) {
 	if (currentTime === undefined)
 		currentTime = Date.now();
 
+	checkPressedDownKeys();
+
 	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix);
 	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
 	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
@@ -531,6 +536,9 @@ function startup() {
 	canvas.addEventListener('mousewheel', handleMouseWheel, false);
 	canvas.addEventListener('DOMMouseScroll', handleMouseWheel, false);
 
+	document.addEventListener('keydown', handleKeyDown, false);
+	document.addEventListener('keyup', handleKeyUp, false);
+
 	gl = createGLContext(canvas);
 
 	init();
@@ -595,6 +603,35 @@ function handleMouseMove(e) {
 
 	lastMouseX = e.clientX;
 	lastMouseY = e.clientY;
+}
+
+function handleKeyDown(e) {
+	if (e.keyCode == 28 || e.keyCode == 40)
+		e.preventDefault();
+
+	pwgl.interaction.listOfPressedKeys[e.keyCode] = true;
+}
+
+function handleKeyUp(e) {
+	if (e.keyCode == 38 || e.keyCode == 40)
+		e.preventDefault();
+
+	pwgl.interaction.listOfPressedKeys[e.keyCode] = false;
+}
+
+function checkPressedDownKeys() {
+	// Up arrow, increase radius of orbit
+	if (pwgl.interaction.listOfPressedKeys[38]) {
+		pwgl.satellite.circleRadius += 0.1;
+	}
+
+	// Down arrow, decrease radius of orbit
+	if (pwgl.interaction.listOfPressedKeys[40]) {
+		if (pwgl.satellite.circleRadius < 2.2)
+			return;
+
+		pwgl.satellite.circleRadius -= 0.1;
+	}
 }
 </script>
 
