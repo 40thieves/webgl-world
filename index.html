@@ -42,13 +42,13 @@ var gl
 ,	canvas
 ,	pwgl
 
-,	mousedown = false
-,	lastMouseX, lastMouseY = 0
+,	mousedown
 ,	transZ = 0
-,	rotationMatrix = mat4.create()
+,	xRotation = 0
+,	yRotation = 0
+,	lastMouseX = 0
+,	lastMouseY = 0
 ;
-
-mat4.identity(rotationMatrix);
 
 pwgl = {
 	globe: {},
@@ -448,19 +448,19 @@ function drawGlobe() {
 function draw(currentTime) {
 	pwgl.requestId = requestAnimFrame(draw);
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 	if (currentTime === undefined)
 		currentTime = Date.now();
 
-	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix);
+	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
+	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
 
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix); // Translation for zoom
-	mat4.multiply(pwgl.modelViewMatrix, rotationMatrix); // Translation for rotation
-	transZ = 0;
+	yRotation = xRotation = transZ = 0;
 
 	uploadProjectionMatrixToShader();
 	uploadModelViewMatrixToShader();
+
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	// Draw satellite
 	pushModelViewMatrix();
@@ -512,6 +512,7 @@ function init() {
 
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
+	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
 }
 
 function startup() {
@@ -586,24 +587,14 @@ function handleMouseWheel(e) {
 }
 
 function handleMouseMove(e) {
-	// Return if not dragging
 	if ( ! mousedown)
 		return;
 
-	var newMouseX = e.clientX
-	,	newMouseY = e.clientY
+	xRotation = -lastMouseY + e.clientY;
+	yRotation = -lastMouseX + e.clientX;
 
-	// Calculate distance travelled by mouse during drag
-	,	deltaX = newMouseX - lastMouseX
-	,	deltaY = newMouseY - lastMouseY
-	;
-
-	// Calculate rotation matrices
-	mat4.rotate(rotationMatrix, degToRad(deltaX / 5), [0, 1, 0]);
-	mat4.rotate(rotationMatrix, -degToRad(deltaY / 5), [1, 0, 0]);
-
-	lastMouseX = newMouseX;
-	lastMouseY = newMouseY;
+	lastMouseX = e.clientX;
+	lastMouseY = e.clientY;
 }
 </script>
 
