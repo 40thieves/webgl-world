@@ -468,7 +468,7 @@ function draw(currentTime) {
 	if (pwgl.animation.startTime === undefined)
 		pwgl.animation.startTime = currentTime;
 
-	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / 2000 * 2 * Math.PI % (2 * Math.PI);
+	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / 4000 * 2 * Math.PI % (2 * Math.PI);
 	pwgl.satellite.x = Math.cos(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
 	pwgl.satellite.z = Math.sin(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
 
