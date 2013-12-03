@@ -418,10 +418,6 @@ function textureFinishedLoading(image, texture) {
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-function degToRad(degrees) {
-	return degrees * Math.PI / 180;
-}
-
 function pushModelViewMatrix() {
 	var cache = mat4.create(pwgl.modelViewMatrix);
 	pwgl.modelViewMatrixStack.push(cache);
