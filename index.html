@@ -615,9 +615,6 @@ function drawGlobe() {
 function draw(currentTime) {
 	pwgl.requestId = requestAnimFrame(draw);
 
-	if (currentTime === undefined)
-		currentTime = Date.now();
-
 	checkPressedDownKeys();
 
 	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix);
