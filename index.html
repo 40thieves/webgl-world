@@ -29,7 +29,7 @@
 	const float shininess = 32.0;
 
 	void main() {
-		// Get the vertex position in eye coordinates
+		// Get the vertex position to eye coordinates
 		vec4 vertexPositionEye4 = uMVMatrix * vec4(aVertexPosition, 1.0);
 		vec3 vertexPositionEye3 = vertexPositionEye4.xyz / vertexPositionEye4.w;
 
@@ -45,7 +45,8 @@
 		// Calculate the reflection vector (R) that is opened for specular light
 		vec3 reflectionVector = normalize(reflect(-vectorToLightSource, normalEye));
 
-		// The camera in eye coordinates is located in the origin and is pointing along the negative z-axis. Calculate view vector (V) in eye coordinates: (0.0, 0.0, 0.0) - vertexPositionEye3
+		// The camera to eye coordinates is located in the origin and is pointing along the negative z-axis
+		// Calculate view vector (V) in eye coordinates: (0.0, 0.0, 0.0) - vertexPositionEye3
 		vec3 viewVectorEye = -normalize(vertexPositionEye3);
 		float rdotv = max(dot(reflectionVector, viewVectorEye), 0.0);
 
