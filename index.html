@@ -184,60 +184,87 @@ function setUpSatelliteBuffers() {
 
 	textureCoordData = [
 		// Front face
-		0.0, 0.0, //v0
-		1.0, 0.0, //v1
-		1.0, 1.0, //v2
-		0.0, 1.0, //v3
+		1.0, 1.0,
+		0.5, 1.0,
+		0.5, 0.5,
+		1.0, 0.5,
 
 		// Back face
-		0.0, 1.0, //v4
-		1.0, 1.0, //v5
-		1.0, 0.0, //v6
-		0.0, 0.0, //v7
-
-		// Left face
-		0.0, 1.0, //v1
-		1.0, 1.0, //v5
-		1.0, 0.0, //v6
-		0.0, 0.0, //v2
-
-		// Right face
-		0.0, 1.0, //v0
-		1.0, 1.0, //v3
-		1.0, 0.0, //v7
-		0.0, 0.0, //v4
+		0.0, 0.5,
+		0.0, 0.0,
+		0.5, 0.0,
+		0.5, 0.5,
 
 		// Top face
-		0.0, 1.0, //v0
-		1.0, 1.0, //v4
-		1.0, 0.0, //v5
-		0.0, 0.0, //v1
+		1.0, 0.5,
+		1.0, 1.0,
+		0.5, 1.0,
+		0.5, 0.5,
 
 		// Bottom face
-		0.0, 1.0, //v3
-		1.0, 1.0, //v7
-		1.0, 0.0, //v6
-		0.0, 0.0, //v2
+		0.5, 0.5,
+		1.0, 0.5,
+		1.0, 1.0,
+		0.5, 1.0,
+
+		// Right face
+		0.5, 1.0,
+		0.5, 0.5,
+		1.0, 0.5,
+		1.0, 1.0,
+
+		// Left face
+		1.0, 1.0,
+		0.5, 1.0,
+		0.5, 0.5,
+		1.0, 0.5
 	];
 
 	positionData = [
-		 1.0,  1.0,  1.0, //v0
-		-1.0,  1.0,  1.0, //v1
-		-1.0, -1.0,  1.0, //v2
-		 1.0, -1.0,  1.0, //v3
-		 1.0,  1.0, -1.0, //v4
-		-1.0,  1.0, -1.0, //v5
-		-1.0, -1.0, -1.0, //v6
-		 1.0, -1.0, -1.0, //v7
+		// Front face
+		-1.0, -1.0,  1.0,
+		 1.0, -1.0,  1.0,
+		 1.0,  1.0,  1.0,
+		-1.0,  1.0,  1.0,
+
+		// Back face
+		-1.0, -1.0, -1.0,
+		-1.0,  1.0, -1.0,
+		 1.0,  1.0, -1.0,
+		 1.0, -1.0, -1.0,
+
+		// Top face
+		-1.0,  1.0, -1.0,
+		-1.0,  1.0,  1.0,
+		 1.0,  1.0,  1.0,
+		 1.0,  1.0, -1.0,
+
+		// Bottom face
+		-1.0, -1.0, -1.0,
+		 1.0, -1.0, -1.0,
+		 1.0, -1.0,  1.0,
+		-1.0, -1.0,  1.0,
+
+		// Right face
+		 1.0, -1.0, -1.0,
+		 1.0,  1.0, -1.0,
+		 1.0,  1.0,  1.0,
+		 1.0, -1.0,  1.0,
+
+		// Left face
+		-1.0, -1.0, -1.0,
+		-1.0, -1.0,  1.0,
+		-1.0,  1.0,  1.0,
+		-1.0,  1.0, -1.0
 	];
 
-	indexData = [
-		0, 1, 2,	0, 2, 3,	// Front face
-		4, 6, 5,	4, 7, 6,	// Back face
-		1, 5, 6,	1, 6, 2,	// Left
-		0, 3, 7,	0, 7, 4,	// Right
-		0, 5, 1,	0, 4, 5,	// Top
-		3, 2, 6,	3, 6, 7 	// Bottom
+	var indexData = [
+		0,  1,  2, 		0,  2,  3, 	// Front face
+		4,  5,  6, 		4,  6,  7, 	// Back face
+		8,  9,  10,		8,  10, 11,	// Top face
+		12, 13, 14,		12, 14, 15,	// Bottom face
+		16, 17, 18,		16, 18, 19,	// Right face
+		20, 21, 22,		20, 22, 23 	// Left face
 	];
 
 	// Creates texture buffer & loads texture data
@@ -360,7 +387,7 @@ function setUpTextures() {
 	loadImageForTexture('assets/earth.jpg', pwgl.texture.earthTexture);
 
 	pwgl.texture.crateTexture = gl.createTexture();
-	loadImageForTexture('assets/crate.gif', pwgl.texture.crateTexture);
+	loadImageForTexture('assets/satellite.jpg', pwgl.texture.crateTexture);
 }
 
 function loadImageForTexture(url, texture) {
