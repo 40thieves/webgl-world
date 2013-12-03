@@ -531,7 +531,7 @@ function textureFinishedLoading(image, texture) {
 }
 
 function setUpLights() {
-	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 10.0, 10.0]);
+	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 20.0, 0.0]);
 	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]);
 	gl.uniform3fv(pwgl.shader.uniformDiffuseLightColorLoc, [1.0, 1.0, 1.0]);
 	gl.uniform3fv(pwgl.shader.uniformSpecularLightColorLoc, [0.2, 0.2, 0.2]);
