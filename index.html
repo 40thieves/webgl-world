@@ -606,7 +606,7 @@ function draw(currentTime) {
 
 	checkPressedDownKeys();
 
-	mat4.translate(pwgl.modelViewMatrix, [0, 0, transZ], pwgl.modelViewMatrix);
+	mat4.translate(pwgl.projectionMatrix, [0, 0, transZ], pwgl.projectionMatrix);
 	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
 	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
 
