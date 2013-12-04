@@ -71,6 +71,7 @@
 	uniform sampler2D uSampler;
 
 	void main() {
+		// Samples colour from texture
 		vec4 texelColor = texture2D(uSampler, vTextureCoordinates);
 		gl_FragColor = vec4(vLightWeighting.rgb * texelColor.rgb, texelColor.a);
 	}
@@ -78,32 +79,51 @@
 
 <!-- WebGL Program -->
 <script type="text/javascript">
-var gl
-,	canvas
-,	pwgl
+/**
+ * Globals
+ */
+var gl							// WebGL object
+,	canvas						// Canvas DOM object
+,	pwgl						// Global object containing all program's internal vars
 
-,	mousedown
-,	transZ = 0
-,	xRotation = 0
-,	yRotation = 0
-,	lastMouseX = 0
-,	lastMouseY = 0
+,	mousedown = false			// Mousedown boolean
+,	lastMouseX, lastMouseY		// Mouse positions at mousedown, for drag distance calculation
+,	transZ 						// Zoom offset
+,	xRotation, yRotation		// Rotation offsets
 ;
 
 pwgl = {
-	globe: {},
-	satellite: {},
-
-	texture: {
-		ongoingImageLoads: []
+	globe: {},					// Object for globe model
+	satellite: {				// Object for satellite model
+		x: 0.0,					// Initial positioning of satellite
+		y: 0.0,
+		z: 0.0,
+		angle: 0,
+		circleRadius: 3.0		// Initial radius of satellite's orbit
 	},
-	animation: {},
-	shader: {},
-	interaction: {
-		listOfPressedKeys: []
+
+	texture: {   				// Object for texture data
+		ongoingImageLoads: []	// Array to hold list of images while loading
+	},
+
+	animation: {
+		startTime: undefined
+	},
+
+	shader: {},					// Object for holding shader data
+	interaction: {				// Object for holding mouse & keyboard interactions
+		listOfPressedKeys: []	// Array of keys that have been pressed
 	}
 };
 
+// Sets interation vars to 0
+lastMouseX = lastMouseY = transZ = xRotation = yRotation = 0;
+
+/**
+ * Creates WebGL context from canvas element
+ * @param  {DOM object} canvas Canvas DOM object
+ * @return {Object}            WebGL context
+ */
 function createGLContext(canvas) {
 	var names = ['webgl', 'experimental-webgl']
 	,	context = null
@@ -130,6 +150,11 @@ function createGLContext(canvas) {
 	return context;
 }
 
+/**
+ * Loads vertex & fragment shaders from DOM
+ * @param  {String} id Id of shader element
+ * @return {Object}    Shader object
+ */
 function loadShaderFromDOM(id) {
 	var shaderScript = document.getElementById(id);
 
@@ -169,9 +194,13 @@ function loadShaderFromDOM(id) {
 	return shader;
 }
 
+/**
+ * Initialises WebGL shaders
+ */
 function setUpShaders() {
 	var vertexShader = loadShaderFromDOM('shader-vs')
 	,	fragmentShader = loadShaderFromDOM('shader-fs')
+
 	,	shaderProgram = gl.createProgram()
 	;
 
@@ -185,6 +214,7 @@ function setUpShaders() {
 
 	gl.useProgram(shaderProgram);
 
+	// Caches positions of attributes & uniforms in shaders
 	pwgl.shader.vertexPositionAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
 	pwgl.shader.vertexTextureAttributeLoc = gl.getAttribLocation(shaderProgram, 'aTextureCoordinates');
 	pwgl.shader.vertexNormalAttributeLoc = gl.getAttribLocation(shaderProgram, 'aVertexNormal');
@@ -204,16 +234,23 @@ function setUpShaders() {
 	gl.enableVertexAttribArray(pwgl.shader.vertexNormalAttributeLoc);
 	gl.enableVertexAttribArray(pwgl.shader.vertexTextureAttributeLoc);
 
+	// Create ModelView & Projection matrices
 	pwgl.modelViewMatrix = mat4.create();
 	pwgl.projectionMatrix = mat4.create();
 	pwgl.modelViewMatrixStack = [];
 }
 
+/**
+ * Inits model buffers
+ */
 function setUpBuffers() {
 	setUpSatelliteBuffers();
 	setUpGlobeBuffers();
 }
 
+/**
+ * Initialises model buffers for satellite
+ */
 function setUpSatelliteBuffers() {
 	var textureCoordData = []
 	,	positionData = []
@@ -381,15 +418,18 @@ function setUpSatelliteBuffers() {
 	pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
+/**
+ * Initialises model buffers for globe
+ */
 function setUpGlobeBuffers() {
 	var normalData = []
 	,	textureCoordData = []
 	,	positionData = []
 	,	indexData = []
 
-	,	m = 30
-	,	n = 30
-	,	r = 2
+	,	m = 30 // Number of latitude bands
+	,	n = 30 // Number of longitude bands
+	,	r = 2  // Radius of sphere
 
 	,	theta, sinTheta, cosTheta, phi, sinPhi, cosPhi
 	,	x, y, z
@@ -481,6 +521,9 @@ function setUpGlobeBuffers() {
 	pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS = indexData.length;
 }
 
+/**
+ * Initialises textures
+ */
 function setUpTextures() {
 	// Earth texture
 	pwgl.texture.earthTexture = gl.createTexture();
@@ -490,6 +533,11 @@ function setUpTextures() {
 	loadImageForTexture('assets/satellite.jpg', pwgl.texture.crateTexture);
 }
 
+/**
+ * Creates Image DOM element & sets up callback to load as texture
+ * @param  {String} url     Url to image
+ * @param  {Object} texture Target texture object
+ */
 function loadImageForTexture(url, texture) {
 	var image = new Image();
 
@@ -505,6 +553,11 @@ function loadImageForTexture(url, texture) {
 	image.src = url;
 }
 
+/**
+ * Binds image object to texture, and generates mipmap
+ * @param  {DOM Object} image   Image DOM element
+ * @param  {Object} texture     Target texture object
+ */
 function textureFinishedLoading(image, texture) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Flips image to use WebGL axis, instead of DOM axis
 	gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -518,18 +571,27 @@ function textureFinishedLoading(image, texture) {
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
+/**
+ * Initialises lighting
+ */
 function setUpLights() {
-	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 20.0, 0.0]);
-	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]);
-	gl.uniform3fv(pwgl.shader.uniformDiffuseLightColorLoc, [1.0, 1.0, 1.0]);
-	gl.uniform3fv(pwgl.shader.uniformSpecularLightColorLoc, [0.2, 0.2, 0.2]);
+	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 20.0, 0.0]); // Directional lighting from above
+	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]); // Low ambient lighting
+	gl.uniform3fv(pwgl.shader.uniformDiffuseLightColorLoc, [1.0, 1.0, 1.0]); // High level of diffusion
+	gl.uniform3fv(pwgl.shader.uniformSpecularLightColorLoc, [0.2, 0.2, 0.2]); // Low level of specular reflection
 }
 
+/**
+ * Caches copy of ModelView matrix in buffer before transformation
+ */
 function pushModelViewMatrix() {
 	var cache = mat4.create(pwgl.modelViewMatrix);
 	pwgl.modelViewMatrixStack.push(cache);
 }
 
+/**
+ * Pops original ModelView matrix off buffer after transformation
+ */
 function popModelViewMatrix() {
 	if (pwgl.modelViewMatrixStack.length == 0) {
 		throw 'Error - ModelView Stack empty';
@@ -537,14 +599,23 @@ function popModelViewMatrix() {
 	pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
 }
 
+/**
+ * Uploads ModelView matrix to shader
+ */
 function uploadModelViewMatrixToShader() {
 	gl.uniformMatrix4fv(pwgl.shader.uniformMVMatrixLoc, false, pwgl.modelViewMatrix);
 }
 
+/**
+ * Uploads Projection matrix to shader
+ */
 function uploadProjectionMatrixToShader() {
 	gl.uniformMatrix4fv(pwgl.shader.uniformProjMatrixLoc, false, pwgl.projectionMatrix);
 }
 
+/**
+ * Creates Normal matrix and uploads to shader
+ */
 function uploadNormalMatrixToShader() {
 	var normalMatrix = mat3.create();
 	mat4.toInverseMat3(pwgl.modelViewMatrix, normalMatrix);
@@ -553,6 +624,9 @@ function uploadNormalMatrixToShader() {
 	gl.uniformMatrix3fv(pwgl.shader.uniformNormalMatrixLoc, false, normalMatrix);
 }
 
+/**
+ * Draws satellite
+ */
 function drawSatellite() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
@@ -577,6 +651,9 @@ function drawSatellite() {
 	gl.drawElements(gl.TRIANGLES, pwgl.satellite.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
 
+/**
+ * Draws globe
+ */
 function drawGlobe() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
@@ -601,9 +678,15 @@ function drawGlobe() {
 	gl.drawElements(gl.TRIANGLES, pwgl.globe.VERTEX_INDEX_BUFF_NUM_ITEMS, gl.UNSIGNED_SHORT, 0);
 }
 
+/**
+ * Creates animation loop & draws shapes on canvas
+ * @param  {Int} currentTime Time in miliseconds at which redraw will occur
+ */
 function draw(currentTime) {
+	// Creates animation loop
 	pwgl.requestId = requestAnimFrame(draw);
 
+	// Keys keyboard for currently pressed keys
 	checkPressedDownKeys();
 
 	// Translate projection to zoom in/out controls
@@ -620,6 +703,7 @@ function draw(currentTime) {
 	uploadModelViewMatrixToShader();
 	uploadNormalMatrixToShader();
 
+	// Clears canvas of previously draw shapes
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	// Draw satellite
@@ -656,31 +740,31 @@ function draw(currentTime) {
 	popModelViewMatrix();
 }
 
+/**
+ * Initialises before draw
+ */
 function init() {
 	setUpShaders();
 	setUpBuffers();
 	setUpTextures();
 	setUpLights();
 
+	// Sets background colour to black
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.enable(gl.DEPTH_TEST);
 
-	pwgl.satellite.x = 0.0;
-	pwgl.satellite.y = 0.0;
-	pwgl.satellite.z = 0.0;
-	pwgl.satellite.circleRadius = 3.0;
-	pwgl.satellite.angle = 0;
-
-	pwgl.animation.startTime = undefined;
-
+	// Sets up viewport in WebGL
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+	// Sets up camera
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix);
+	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved 10 back from model, and looks at origin
 }
 
+/**
+ * Creates event handlers and fires initialisation and draw function
+ */
 function startup() {
 	canvas = document.getElementById('myGLCanvas');
 	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
@@ -697,6 +781,7 @@ function startup() {
 	canvas.addEventListener('mousewheel', handleMouseWheel, false);
 	canvas.addEventListener('DOMMouseScroll', handleMouseWheel, false);
 
+	// Keyboard event handlers
 	document.addEventListener('keydown', handleKeyDown, false);
 	document.addEventListener('keyup', handleKeyUp, false);
 
@@ -707,6 +792,9 @@ function startup() {
 	draw();
 }
 
+/**
+ * Handles WebGL losing context from canvas and prevents textures from being loaded
+ */
 function handleContextLost(e) {
 	e.preventDefault();
 	cancelRequestAnimFrame(pwgl.requestId);
@@ -718,22 +806,33 @@ function handleContextLost(e) {
 	pwgl.texture.ongoingImageLoads = [];
 }
 
+/**
+ * Handles WebGL restoring context on canvas and sets up animation loop again
+ */
 function handleContextRestored(e) {
 	init();
-
-	pwgl.requestId = requestAnimFrame(draw, canvas);
+	draw();
 }
 
+/**
+ * Handles mousedown event and caches mouse position for drag distance calc
+ */
 function handleMouseDown(e) {
 	mousedown = true;
 	lastMouseX = e.clientX;
 	lastMouseY = e.clientY;
 }
 
+/**
+ * Handles mouseup event and cancels drag
+ */
 function handleMouseUp(e) {
 	mousedown = false;
 }
 
+/**
+ * Handles various scroll events and calculates zoom distance
+ */
 function handleMouseWheel(e) {
 	e.preventDefault();
 
@@ -747,7 +846,11 @@ function handleMouseWheel(e) {
 	}
 }
 
+/**
+ * Listens for mousemove and calculates drag distance if mouse was down during move
+ */
 function handleMouseMove(e) {
+	// If mouse wasn't down, exit
 	if ( ! mousedown)
 		return;
 
@@ -758,6 +861,9 @@ function handleMouseMove(e) {
 	lastMouseY = e.clientY;
 }
 
+/**
+ * Handles keydown event and caches keycode
+ */
 function handleKeyDown(e) {
 	if (e.keyCode == 28 || e.keyCode == 40)
 		e.preventDefault();
@@ -765,6 +871,9 @@ function handleKeyDown(e) {
 	pwgl.interaction.listOfPressedKeys[e.keyCode] = true;
 }
 
+/**
+ * Handles keyup event and removes keycode from cache
+ */
 function handleKeyUp(e) {
 	if (e.keyCode == 38 || e.keyCode == 40)
 		e.preventDefault();
@@ -772,6 +881,9 @@ function handleKeyUp(e) {
 	pwgl.interaction.listOfPressedKeys[e.keyCode] = false;
 }
 
+/**
+ * Tests which keys are currently pressed, and increases/decreases satellite orbit
+ */
 function checkPressedDownKeys() {
 	// Up arrow, increase radius of orbit
 	if (pwgl.interaction.listOfPressedKeys[38]) {
