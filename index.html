@@ -606,10 +606,14 @@ function draw(currentTime) {
 
 	checkPressedDownKeys();
 
+	// Translate projection to zoom in/out controls
 	mat4.translate(pwgl.projectionMatrix, [0, 0, transZ], pwgl.projectionMatrix);
+
+	// Rotate ModelView for rotation controls
 	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
 	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
 
+	// Reset zoom/rotation values
 	yRotation = xRotation = transZ = 0;
 
 	uploadProjectionMatrixToShader();
