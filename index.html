@@ -686,6 +686,9 @@ function draw(currentTime) {
 	// Creates animation loop
 	pwgl.requestId = requestAnimFrame(draw);
 
+	if (pwgl.animation.startTime === undefined)
+		pwgl.animation.startTime = currentTime;
+
 	// Keys keyboard for currently pressed keys
 	checkPressedDownKeys();
 
@@ -709,11 +712,9 @@ function draw(currentTime) {
 	// Draw satellite
 	pushModelViewMatrix();
 
-	if (pwgl.animation.startTime === undefined)
-		pwgl.animation.startTime = currentTime;
-
 	// Calculates satellite's x & z positions for orbit
 	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / 4000 * 2 * Math.PI % (2 * Math.PI);
+
 	pwgl.satellite.x = Math.cos(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
 	pwgl.satellite.z = Math.sin(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
 
@@ -721,6 +722,9 @@ function draw(currentTime) {
 	mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
 	// Scales satellite to correct size
 	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
+
+	mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle), pwgl.modelViewMatrix);
+	// mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle % (2 * Math.PI)), pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
 	uploadNormalMatrixToShader();
