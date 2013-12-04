@@ -209,18 +209,6 @@ function setUpShaders() {
 	pwgl.modelViewMatrixStack = [];
 }
 
-function pushModelViewMatrix() {
-	var copy = mat4.create(pwgl.modelViewMatrix);
-	pwgl.modelViewMatrixStack.push(copy);
-}
-
-function popModelViewMatrix() {
-	if (pwgl.modelViewMatrixStack.length == 0) {
-		throw 'Error popModelViewMatrix() - Stack was empty';
-	}
-	pwgl.modelViewMatrix = pwgl.modelViewMatrixStack.pop();
-}
-
 function setUpBuffers() {
 	setUpSatelliteBuffers();
 	setUpGlobeBuffers();
