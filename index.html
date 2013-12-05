@@ -68,7 +68,9 @@
 		float specularLightWeighting = pow(rdotv, shininess);
 
 		// Sum up all three reflection components
-		vec3 lightWeighting = uAmbientLightColor + uDiffuseLightColor * diffuseLightWeighting +uSpecularLightColor * specularLightWeighting;
+		vec3 lightWeighting = uAmbientLightColor + 
+							  uDiffuseLightColor * diffuseLightWeighting + 
+							  uSpecularLightColor * specularLightWeighting;
 
 		// Sample the texture
 		vec4 texelColor = texture2D(uSampler, vTextureCoordinates);
