@@ -96,7 +96,9 @@ var gl							// WebGL object
 ;
 
 pwgl = {
-	globe: {},					// Object for globe model
+	globe: {					// Object for globe model
+		angle: 0
+	},
 	satellite: {				// Object for satellite model
 		x: 0.0,					// Initial positioning of satellite
 		y: 0.0,
@@ -726,7 +728,7 @@ function draw(currentTime) {
 	// Scales satellite to correct size
 	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
 
-	mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle), pwgl.modelViewMatrix);
+	// mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle), pwgl.modelViewMatrix);
 	// mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle % (2 * Math.PI)), pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
@@ -738,6 +740,9 @@ function draw(currentTime) {
 
 	// Draw sphere
 	pushModelViewMatrix();
+
+	pwgl.globe.angle = (currentTime - pwgl.animation.startTime) / 16000 * 2 * Math.PI % (2 * Math.PI);
+	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.globe.angle, pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
 	uploadNormalMatrixToShader();
