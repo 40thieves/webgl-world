@@ -580,7 +580,7 @@ function textureFinishedLoading(image, texture) {
  * Initialises lighting
  */
 function setUpLights() {
-	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 100.0, 20.0]); // Directional lighting from above
+	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 20.0, -10.0]); // Directional lighting from above
 	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]); // Low ambient lighting
 	gl.uniform3fv(pwgl.shader.uniformDiffuseLightColorLoc, [1.0, 1.0, 1.0]); // High level of diffusion
 	gl.uniform3fv(pwgl.shader.uniformSpecularLightColorLoc, [0.2, 0.2, 0.2]); // Low level of specular reflection
@@ -701,7 +701,7 @@ function draw(currentTime) {
 	mat4.translate(pwgl.projectionMatrix, [0, 0, transZ], pwgl.projectionMatrix);
 
 	// Rotate ModelView for rotation controls
-	mat4.rotateX(pwgl.modelViewMatrix, -(xRotation / 100), pwgl.modelViewMatrix);
+	mat4.rotateX(pwgl.modelViewMatrix, xRotation / 100, pwgl.modelViewMatrix);
 	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
 
 	// Reset zoom/rotation values
@@ -713,6 +713,7 @@ function draw(currentTime) {
 
 	// Clears canvas of previously draw shapes
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
 	// Draw satellite
 	pushModelViewMatrix();
@@ -741,7 +742,7 @@ function draw(currentTime) {
 	// Draw sphere
 	pushModelViewMatrix();
 
-	pwgl.globe.angle = (currentTime - pwgl.animation.startTime) / 16000 * 2 * Math.PI % (2 * Math.PI);
+	pwgl.globe.angle = (currentTime - pwgl.animation.startTime) / 24000 * 2 * Math.PI % (2 * Math.PI);
 	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.globe.angle, pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
@@ -765,13 +766,10 @@ function init() {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.enable(gl.DEPTH_TEST);
 
-	// Sets up viewport in WebGL
-	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-
 	// Sets up camera
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, -10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved 10 back from model, and looks at origin
+	mat4.lookAt([0, 0, 10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved 10 back from model, and looks at origin
 }
 
 /**
