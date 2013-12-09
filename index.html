@@ -20,12 +20,12 @@
 
 	varying vec2 vTextureCoordinates;
 	varying vec3 vNormalEye;
-	varying vec3 vPositionEye3;
+	varying vec3 vPositionEye;
 
 	void main() {
 		// Get vertex position to eye coordinates and send to the fragment shader
 		vec4 vertexPositionEye4 = uMVMatrix * vec4(aVertexPosition, 1.0);
-		vPositionEye3 = vertexPositionEye4.xyz / vertexPositionEye4.w;
+		vPositionEye = vertexPositionEye4.xyz / vertexPositionEye4.w;
 
 		// Transform the normal to eye coordinates and send to fragment shader
 		vNormalEye = normalize(uNMatrix * aVertexNormal);
