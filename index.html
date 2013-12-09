@@ -854,7 +854,7 @@ function handleMouseWheel(e) {
 		else if (e.altKey)
 			transY += e.wheelDelta / 120;
 		else
-			transZ += 1 / 120 * e.wheelDelta;
+			transZ += e.wheelDelta / 120;
 	}
 	// Other browers use detail
 	else {
