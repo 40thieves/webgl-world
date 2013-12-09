@@ -728,7 +728,7 @@ function draw(currentTime) {
 	mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
 	// Scales satellite to correct size
 	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
-
+	// Rotates to face earth
 	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.satellite.angle, pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
