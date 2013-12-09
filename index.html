@@ -637,7 +637,6 @@ function uploadNormalMatrixToShader() {
 function drawSatellite() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.crateTexture);
-	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
 
 	// Bind position buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.satellite.vertexPositionBuffer);
@@ -664,7 +663,6 @@ function drawSatellite() {
 function drawGlobe() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, pwgl.texture.earthTexture);
-	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
 
 	// Bind position buffer
 	gl.bindBuffer(gl.ARRAY_BUFFER, pwgl.globe.vertexPositionBuffer);
@@ -716,6 +714,8 @@ function draw(currentTime) {
 	// Clears canvas of previously draw shapes
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+
+	gl.uniform1i(pwgl.shader.uniformSamplerLoc, 0);
 
 	// Draw satellite
 	pushModelViewMatrix();
