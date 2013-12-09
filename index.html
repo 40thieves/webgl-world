@@ -64,6 +64,7 @@
 
 		// Calculate viewVector (V) in eye coordinates (0.0, 0.0, 0.0) - vPositionEye
 		vec3 viewVectorEye = -normalize(vPositionEye);
+
 		float rdotv = max(dot(reflectionVector, viewVectorEye), 0.0);
 		float specularLightWeighting = pow(rdotv, shininess);
 
@@ -295,7 +296,7 @@ function setUpSatelliteBuffers() {
 		1.0, 0.5,
 		1.0, 1.0,
 
-		// Left face
+		// Left face - faces the earth, must use left half of texture (grey)
 		0.5, 0.5,
 		0.0, 0.5,
 		0.0, 0.0,
