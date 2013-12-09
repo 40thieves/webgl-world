@@ -303,40 +303,40 @@ function setUpSatelliteBuffers() {
 
 	positionData = [
 		// Front face
-		-1.0, -1.0,  1.0,
-		 1.0, -1.0,  1.0,
-		 1.0,  1.0,  1.0,
-		-1.0,  1.0,  1.0,
+		-2.0, -2.0,  2.0,
+		 2.0, -2.0,  2.0,
+		 2.0,  2.0,  2.0,
+		-2.0,  2.0,  2.0,
 
 		// Back face
-		-1.0, -1.0, -1.0,
-		-1.0,  1.0, -1.0,
-		 1.0,  1.0, -1.0,
-		 1.0, -1.0, -1.0,
+		-2.0, -2.0, -2.0,
+		-2.0,  2.0, -2.0,
+		 2.0,  2.0, -2.0,
+		 2.0, -2.0, -2.0,
 
 		// Top face
-		-1.0,  1.0, -1.0,
-		-1.0,  1.0,  1.0,
-		 1.0,  1.0,  1.0,
-		 1.0,  1.0, -1.0,
+		-2.0,  2.0, -2.0,
+		-2.0,  2.0,  2.0,
+		 2.0,  2.0,  2.0,
+		 2.0,  2.0, -2.0,
 
 		// Bottom face
-		-1.0, -1.0, -1.0,
-		 1.0, -1.0, -1.0,
-		 1.0, -1.0,  1.0,
-		-1.0, -1.0,  1.0,
+		-2.0, -2.0, -2.0,
+		 2.0, -2.0, -2.0,
+		 2.0, -2.0,  2.0,
+		-2.0, -2.0,  2.0,
 
 		// Right face
-		 1.0, -1.0, -1.0,
-		 1.0,  1.0, -1.0,
-		 1.0,  1.0,  1.0,
-		 1.0, -1.0,  1.0,
+		 2.0, -2.0, -2.0,
+		 2.0,  2.0, -2.0,
+		 2.0,  2.0,  2.0,
+		 2.0, -2.0,  2.0,
 
 		// Left face
-		-1.0, -1.0, -1.0,
-		-1.0, -1.0,  1.0,
-		-1.0,  1.0,  1.0,
-		-1.0,  1.0, -1.0
+		-2.0, -2.0, -2.0,
+		-2.0, -2.0,  2.0,
+		-2.0,  2.0,  2.0,
+		-2.0,  2.0, -2.0
 	];
 
 	normalData = [
@@ -727,7 +727,7 @@ function draw(currentTime) {
 	// Translates satellite into orbit
 	mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
 	// Scales satellite to correct size
-	mat4.scale(pwgl.modelViewMatrix, [0.3, 0.3, 0.3], pwgl.modelViewMatrix);
+	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
 	// Rotates to face earth
 	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.satellite.angle, pwgl.modelViewMatrix);
 
