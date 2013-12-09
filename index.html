@@ -271,10 +271,10 @@ function setUpSatelliteBuffers() {
 		1.0, 0.5,
 
 		// Back face
-		0.0, 0.5,
-		0.0, 0.0,
-		0.5, 0.0,
+		0.5, 1.0,
 		0.5, 0.5,
+		1.0, 0.5,
+		1.0, 1.0,
 
 		// Top face
 		1.0, 0.5,
@@ -295,10 +295,10 @@ function setUpSatelliteBuffers() {
 		1.0, 1.0,
 
 		// Left face
-		1.0, 1.0,
-		0.5, 1.0,
 		0.5, 0.5,
-		1.0, 0.5
+		0.0, 0.5,
+		0.0, 0.0,
+		0.5, 0.0
 	];
 
 	positionData = [
@@ -729,8 +729,7 @@ function draw(currentTime) {
 	// Scales satellite to correct size
 	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
 
-	// mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle), pwgl.modelViewMatrix);
-	// mat4.rotateY(pwgl.modelViewMatrix, Math.cos(-pwgl.satellite.angle % (2 * Math.PI)), pwgl.modelViewMatrix);
+	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.satellite.angle, pwgl.modelViewMatrix);
 
 	uploadModelViewMatrixToShader();
 	uploadNormalMatrixToShader();
