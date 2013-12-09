@@ -15,3 +15,7 @@ __Controls__
 * Click and drag: Rotate the scene
 * Scroll: Zoom in/out of the scene
 * Up/Down keys: Increase/Decrease the satellite's orbit
+
+### License
+
+Released under a MIT License.
