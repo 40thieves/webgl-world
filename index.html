@@ -581,7 +581,7 @@ function textureFinishedLoading(image, texture) {
  */
 function setUpLights() {
 	gl.uniform3fv(pwgl.shader.uniformLightPositionLoc, [0.0, 20.0, -10.0]); // Directional lighting from above
-	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.2, 0.2, 0.2]); // Low ambient lighting
+	gl.uniform3fv(pwgl.shader.uniformAmbientLightColorLoc, [0.5, 0.5, 0.5]); // Low ambient lighting
 	gl.uniform3fv(pwgl.shader.uniformDiffuseLightColorLoc, [1.0, 1.0, 1.0]); // High level of diffusion
 	gl.uniform3fv(pwgl.shader.uniformSpecularLightColorLoc, [0.2, 0.2, 0.2]); // Low level of specular reflection
 }
