@@ -104,7 +104,7 @@ pwgl = {
 		y: 0.0,
 		z: 0.0,
 		angle: 0,
-		circleRadius: 3.0		// Initial radius of satellite's orbit
+		circleRadius: 8.0		// Initial radius of satellite's orbit
 	},
 
 	texture: {   				// Object for texture data
@@ -434,7 +434,7 @@ function setUpGlobeBuffers() {
 
 	,	m = 30 // Number of latitude bands
 	,	n = 30 // Number of longitude bands
-	,	r = 2  // Radius of sphere
+	,	r = 5  // Radius of sphere
 
 	,	theta, sinTheta, cosTheta, phi, sinPhi, cosPhi
 	,	x, y, z
@@ -727,7 +727,7 @@ function draw(currentTime) {
 	// Translates satellite into orbit
 	mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
 	// Scales satellite to correct size
-	mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
+	mat4.scale(pwgl.modelViewMatrix, [0.3, 0.3, 0.3], pwgl.modelViewMatrix);
 	// Rotates to face earth
 	mat4.rotateY(pwgl.modelViewMatrix, -pwgl.satellite.angle, pwgl.modelViewMatrix);
 
@@ -768,7 +768,7 @@ function init() {
 	// Sets up camera
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, 10], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved 10 back from model, and looks at origin
+	mat4.lookAt([0, 0, 25], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved 10 back from model, and looks at origin
 }
 
 /**
@@ -901,7 +901,7 @@ function checkPressedDownKeys() {
 
 	// Down arrow, decrease radius of orbit
 	if (pwgl.interaction.listOfPressedKeys[40]) {
-		if (pwgl.satellite.circleRadius < 2.2)
+		if (pwgl.satellite.circleRadius < 5.5)
 			return;
 
 		pwgl.satellite.circleRadius -= 0.1;
