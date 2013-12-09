@@ -91,7 +91,7 @@ var gl							// WebGL object
 
 ,	mousedown = false			// Mousedown boolean
 ,	lastMouseX, lastMouseY		// Mouse positions at mousedown, for drag distance calculation
-,	transZ 						// Zoom offset
+,	transY, transZ 				// Zoom and movement offsets
 ,	xRotation, yRotation		// Rotation offsets
 ;
 
@@ -121,8 +121,9 @@ pwgl = {
 	}
 };
 
-// Sets interation vars to 0
-lastMouseX = lastMouseY = transZ = xRotation = yRotation = 0;
+// Sets interaction vars to 0
+transY = transZ = 0;
+lastMouseX = lastMouseY = xRotation = yRotation = 0;
 
 /**
  * Creates WebGL context from canvas element
@@ -698,14 +699,14 @@ function draw(currentTime) {
 	checkPressedDownKeys();
 
 	// Translate projection to zoom in/out controls
-	mat4.translate(pwgl.projectionMatrix, [0, 0, transZ], pwgl.projectionMatrix);
+	mat4.translate(pwgl.projectionMatrix, [0, transY, transZ], pwgl.projectionMatrix);
 
 	// Rotate ModelView for rotation controls
 	mat4.rotateX(pwgl.modelViewMatrix, xRotation / 100, pwgl.modelViewMatrix);
 	mat4.rotateY(pwgl.modelViewMatrix, yRotation / 100, pwgl.modelViewMatrix);
 
 	// Reset zoom/rotation values
-	yRotation = xRotation = transZ = 0;
+	yRotation = xRotation = transY = transZ = 0;
 
 	uploadProjectionMatrixToShader();
 	uploadModelViewMatrixToShader();
@@ -847,11 +848,17 @@ function handleMouseWheel(e) {
 
 	// Webkit uses wheelDelta
 	if (e.wheelDelta) {
-		transZ += 1 / 120 * e.wheelDelta;
+		if (e.altKey)
+			transY -= e.wheelDelta / 120;
+		else
+			transZ += 1 / 120 * e.wheelDelta;
 	}
 	// Other browers use detail
 	else {
-		transZ += -e.deltaY;
+		if (e.altKey)
+			transY -= e.deltaY / 10;
+		else
+			transZ += -e.deltaY / 10;
 	}
 }
 
