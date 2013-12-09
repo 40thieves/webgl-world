@@ -770,7 +770,7 @@ function init() {
 	// Sets up camera
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pwgl.projectionMatrix);
 	mat4.identity(pwgl.modelViewMatrix);
-	mat4.lookAt([0, 0, 25], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved back from model, and looks at origin
+	mat4.lookAt([0, 0, 22], [0, 0, 0], [0, 1, 0], pwgl.modelViewMatrix); // Camera moved back from model, and looks at origin
 }
 
 /**
