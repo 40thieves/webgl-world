@@ -874,7 +874,7 @@ function handleMouseWheel(e) {
 					return;
 			}
 			else {
-				if (totalY < -9)
+				if (totalY < -8)
 					return;
 			}
 
@@ -899,10 +899,30 @@ function handleMouseWheel(e) {
 	// Other browers use detail
 	else {
 		if (e.shiftKey) {
+			if (e.deltaY > 0) {
+				if (totalX > 8)
+					return;
+			}
+			else {
+				if (totalX < -8)
+					return;
+			}
+
 			transX += e.deltaY / 10;
+			totalX += e.deltaY / 10;
 		}
 		else if (e.altKey) {
+			if (e.deltaY > 0) {
+				if (totalY > 8)
+					return;
+			}
+			else {
+				if (totalY < -8)
+					return;
+			}
+
 			transY += e.deltaY / 10;
+			totalY += e.deltaY / 10;
 		}
 		else {
 			// Prevent zooming too far
