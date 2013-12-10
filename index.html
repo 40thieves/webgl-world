@@ -105,7 +105,8 @@ pwgl = {
 		y: 0.0,
 		z: 0.0,
 		angle: 0,
-		circleRadius: 8.0		// Initial radius of satellite's orbit
+		circleRadius: 8.0,		// Initial radius of satellite's orbit
+		orbitSpeed: 4000		// Initial orbital speed
 	},
 
 	texture: {   				// Object for texture data
@@ -721,7 +722,7 @@ function draw(currentTime) {
 	pushModelViewMatrix();
 
 	// Calculates satellite's x & z positions for orbit
-	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / 4000 * 2 * Math.PI % (2 * Math.PI);
+	pwgl.satellite.angle = (currentTime - pwgl.animation.startTime) / pwgl.satellite.orbitSpeed * 2 * Math.PI % (2 * Math.PI);
 
 	pwgl.satellite.x = Math.cos(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
 	pwgl.satellite.z = Math.sin(pwgl.satellite.angle) * pwgl.satellite.circleRadius;
@@ -886,7 +887,7 @@ function handleMouseMove(e) {
  * Handles keydown event and caches keycode
  */
 function handleKeyDown(e) {
-	if (e.keyCode == 28 || e.keyCode == 40)
+	if (e.keyCode == 28 || e.keyCode == 40 || e.keyCode == 37 || e.keyCode == 39)
 		e.preventDefault();
 
 	pwgl.interaction.listOfPressedKeys[e.keyCode] = true;
@@ -896,7 +897,7 @@ function handleKeyDown(e) {
  * Handles keyup event and removes keycode from cache
  */
 function handleKeyUp(e) {
-	if (e.keyCode == 38 || e.keyCode == 40)
+	if (e.keyCode == 38 || e.keyCode == 40 || e.keyCode == 37 || e.keyCode == 39)
 		e.preventDefault();
 
 	pwgl.interaction.listOfPressedKeys[e.keyCode] = false;
@@ -917,6 +918,14 @@ function checkPressedDownKeys() {
 			return;
 
 		pwgl.satellite.circleRadius -= 0.1;
+	}
+
+	if (pwgl.interaction.listOfPressedKeys[37]) {
+		pwgl.satellite.orbitSpeed += 100;
+	}
+
+	if (pwgl.interaction.listOfPressedKeys[39]) {
+		pwgl.satellite.orbitSpeed -= 100;
 	}
 }
 </script>
