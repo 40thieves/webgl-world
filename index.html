@@ -913,16 +913,16 @@ function handleMouseWheel(e) {
 		}
 		else if (e.altKey) {
 			if (e.deltaY > 0) {
-				if (totalY > 8)
-					return;
-			}
-			else {
 				if (totalY < -8)
 					return;
 			}
+			else {
+				if (totalY > 8)
+					return;
+			}
 
-			transY += e.deltaY / 10;
-			totalY += e.deltaY / 10;
+			transY -= e.deltaY / 10;
+			totalY -= e.deltaY / 10;
 		}
 		else {
 			// Prevent zooming too far
