@@ -126,6 +126,7 @@ pwgl = {
 
 // Sets interaction vars to 0
 transX = transY = transZ = 0;
+totalX = totalY = 0;
 totalZ = 22;
 lastMouseX = lastMouseY = xRotation = yRotation = 0;
 
@@ -853,10 +854,29 @@ function handleMouseWheel(e) {
 	// Webkit uses wheelDelta
 	if (e.wheelDelta) {
 		if (e.shiftKey) {
+			// Prevent movement too far
+			if (e.wheelDelta > 0) {
+				if (totalX < -8)
+					return;
+			}
+			else {
+				if (totalX > 8)
+					return;
+			}
+
 			transX -= e.wheelDelta / 120;
+			totalX -= e.wheelDelta / 120;
 		}
 		else if (e.altKey) {
+			if (e.wheelDelta > 0) {
+
+			}
+			else {
+
+			}
+
 			transY += e.wheelDelta / 120;
+			totalY += e.wheelDelta / 120;
 		}
 		else {
 			// Prevent zooming too far
