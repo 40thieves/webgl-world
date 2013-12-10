@@ -93,6 +93,7 @@ var gl							// WebGL object
 ,	mousedown = false			// Mousedown boolean
 ,	lastMouseX, lastMouseY		// Mouse positions at mousedown, for drag distance calculation
 ,	transX, transY, transZ		// Zoom and movement offsets
+,	totalZ						// Total zoom distance
 ,	xRotation, yRotation		// Rotation offsets
 ;
 
@@ -125,6 +126,7 @@ pwgl = {
 
 // Sets interaction vars to 0
 transX = transY = transZ = 0;
+totalZ = 22;
 lastMouseX = lastMouseY = xRotation = yRotation = 0;
 
 /**
@@ -850,21 +852,49 @@ function handleMouseWheel(e) {
 
 	// Webkit uses wheelDelta
 	if (e.wheelDelta) {
-		if (e.shiftKey)
+		if (e.shiftKey) {
 			transX -= e.wheelDelta / 120;
-		else if (e.altKey)
+		}
+		else if (e.altKey) {
 			transY += e.wheelDelta / 120;
-		else
+		}
+		else {
+			// Prevent zooming too far
+			if (e.wheelDelta > 0) {
+				if (totalZ >= 35)
+					return;
+			}
+			else {
+				if (totalZ <= -55)
+					return;
+			}
+
 			transZ += e.wheelDelta / 120;
+			totalZ += e.wheelDelta / 120;
+		}
 	}
 	// Other browers use detail
 	else {
-		if (e.shiftKey)
+		if (e.shiftKey) {
 			transX += e.deltaY / 10;
-		else if (e.altKey)
+		}
+		else if (e.altKey) {
 			transY += e.deltaY / 10;
-		else
+		}
+		else {
+			// Prevent zooming too far
+			if (e.deltaY < 0) {
+				if (totalZ >= 35)
+					return;
+			}
+			else {
+				if (totalZ <= -55)
+					return;
+			}
+
 			transZ += -e.deltaY / 10;
+			totalZ += -e.deltaY / 10;
+		}
 	}
 }
 
@@ -925,6 +955,9 @@ function checkPressedDownKeys() {
 	}
 
 	if (pwgl.interaction.listOfPressedKeys[39]) {
+		if (pwgl.satellite.orbitSpeed <= 0)
+			return;
+
 		pwgl.satellite.orbitSpeed -= 100;
 	}
 }
