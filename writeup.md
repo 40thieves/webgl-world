@@ -1,6 +1,6 @@
 ## Advanced Computer Graphics and Vision
 
-The application draws a sphere planet, which is generated from several buffers. These buffers are populated in the `setUpGlobeBuffers` function, from two loops. The first loop populates the normal and position buffers, by looping through a number of sections vertically and horizontally and calculating the position and orientation of vertices in triangles. The number of sections is defined by the `n` and `m` variables, and the radius of the sphere is defined by `r`.
+The application draws a sphere planet, which is generated from several buffers. These buffers are populated in the `setUpGlobeBuffers` function, from two loops. The first loop populates the normal and position buffers, by looping through a number of sections vertically and horizontally to calculate the position and orientation of vertices a triangle lattice. The number of sections is defined by the `n` and `m` variables, and the radius of the sphere is defined by `r`.
 
 ![Figure 1: Globe position buffer](assets/globe-buffer.png)
 
@@ -14,15 +14,18 @@ mat4.rotateY(pwgl.modelViewMatrix, -pwgl.globe.angle, pwgl.modelViewMatrix);
 
 The application must also draw a satellite as a 2x2x2 cube. This also achieved using 4 buffers initialised in the `setUpSatelliteBuffers` function. Instead of using a loop, each value in the buffers is created manually. To create a 2x2x2 cube, the position buffer holds positions that are 2 values away from the origin.
 
-This will draw the cube at origin, within the existing globe. The application needs to move the model out and move according to it's orbit. The application works out the updated position of the satellite and applies a transformation to move the model-view matrix to this position. The application must also scale the cube down to the appropriate size, and this is done by application of a scale transformation to the cube. Finally for one side of the cube to remain facing the planet at all times, the cube must be rotated for each animation frame. This is achieved by applying a rotation transformation around the Y-axis, rotating the cube in the opposite direction to the orbit.
+This will draw the cube at origin, within the existing globe. The application needs to move the model out and move according to it's orbit. The application works out the updated position of the satellite and applies a transformation to move the model-view matrix to this position. The application must also scale the cube down to the appropriate size, and this is done by application of a scale transformation to the cube. Finally, for one side of the cube to remain facing the planet at all times, the cube must be rotated for each animation frame. This is achieved by applying a rotation transformation around the Y-axis, rotating the cube in the opposite direction to the orbit.
 
 ```javascript
-mat4.translate(pwgl.modelViewMatrix, [pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], pwgl.modelViewMatrix);
+mat4.translate(pwgl.modelViewMatrix, 
+	[pwgl.satellite.x, pwgl.satellite.y, pwgl.satellite.z], 
+	pwgl.modelViewMatrix);
 mat4.scale(pwgl.modelViewMatrix, [0.2, 0.2, 0.2], pwgl.modelViewMatrix);
-mat4.rotateY(pwgl.modelViewMatrix, -pwgl.satellite.angle, pwgl.modelViewMatrix);
+mat4.rotateY(pwgl.modelViewMatrix, 
+	-pwgl.satellite.angle, pwgl.modelViewMatrix);
 ```
 
-Both the planet and the satellite are textured. As discussed, the texture mapping data is stored in the texture buffers when the buffers are created. The textures themselves are initialised in the `setUpTextures`, `loadImageForTexture` and `textureFinishedLoading` functions. For each texture, an image element is created and loaded with the image URL. A callback is created to be called when the image has finished loading into the element. The callback binds the image element to the texture and generates mipmap textures.
+Both the planet and the satellite are textured. The textures themselves are initialised in the `setUpTextures`, `loadImageForTexture` and `textureFinishedLoading` functions. For each texture, an image element is created and loaded with the image URL. A callback is created to be called when the image has finished loading into the element. The callback binds the image element to the texture and generates mipmap textures.
 
 The specification document states that the satellite cube has two different parts for the texture. One side of the cube must be grey and all other sides must be gold or yellow. This is achieved by creating a single texture of two squares, one grey and one gold.
 
@@ -43,17 +46,19 @@ vNormalEye = normalize(uNMatrix * aVertexNormal);
 
 In the Phong model, most of the calculation is done in the fragment shader. This is because each fragment must calculate it's diffuse and specular light.
 
-In the fragment shader, diffuse light is calculated first. The vector to the light source (L) is found. This is then used to calculate the diffuse light weighting. Later in the shader this is multiplied by the diffuse light colour, provided by the application.
+In the fragment shader, diffuse light is calculated first. The vector to the light source is found. This is then used to calculate the diffuse light weighting, by finding the dot product with the normal vector. Later in the shader this is multiplied by the diffuse light colour, provided by the application.
 
 ```
 vec3 vectorToLightSource = normalize(uLightPosition - vPositionEye);
-float diffuseLightWeighting = max(dot(vNormalEye, vectorToLightSource), 0.0);
+float diffuseLightWeighting = 
+	max(dot(vNormalEye, vectorToLightSource), 0.0);
 ```
 
 Next, specular light is calculated. Again, the vector to light source is used, this time to calculate the reflection vector, the vector at which the light is reflected. Next the vector to the eye is calculated. Using these, the dot product is calculated, and raised to the power of the shininess constant. This gives the specular light weighting. Later in the shader, this is multiplied by the specular light colour, provided by the application.
 
 ```
-vec3 reflectionVector = normalize(reflect(-vectorToLightSource, vNormalEye));
+vec3 reflectionVector = 
+	normalize(reflect(-vectorToLightSource, vNormalEye));
 
 vec3 viewVectorEye = -normalize(vPositionEye);
 
@@ -64,7 +69,9 @@ float specularLightWeighting = pow(rdotv, shininess);
 All of the light components (ambient, diffuse and specular) are then summed to produce the overall light weighting.
 
 ```javascript
-vec3 lightWeighting = uAmbientLightColor + uDiffuseLightColor * diffuseLightWeighting + uSpecularLightColor * specularLightWeighting;
+vec3 lightWeighting = uAmbientLightColor + 
+	uDiffuseLightColor * diffuseLightWeighting + 
+	uSpecularLightColor * specularLightWeighting;
 ```
 
 The last part of the specification describes how the scene must be interactive. The scene can be rotated by clicking and dragging using the mouse. This is achieved by capturing the mouse movement while the mouse is down.
@@ -109,29 +116,35 @@ else
 During the animation loop, the projection matrix is transformed so that the camera moves relative to the origin. Movement along the Z-axis zooms the camera in or out. Movement along the X-axis or Y-axis moves the camera left and right or up and down respectively.
 
 ```javascript
-mat4.translate(pwgl.projectionMatrix, [transX, transY, transZ], pwgl.projectionMatrix);
+mat4.translate(pwgl.projectionMatrix, [transX, transY, transZ], 
+	pwgl.projectionMatrix);
 ```
 
-Finally, the last interaction is the ability to control the orbit of the satellite using the keyboard. By pressing the up or down arrows, the diameter of the orbit is increased or decreased. Keyboard events are listened to and cached by the application, while the key is pressed.
+Finally, the last interaction is the ability to control the orbit of the satellite using the keyboard. By pressing the up or down arrows, the diameter of the orbit is increased or decreased. Pressing the left and right arrow keys increases and decreases the orbit speed. Keyboard events are listened to and cached by the application, while the key is pressed.
 
 ```javascript
-if (e.keyCode == 28 || e.keyCode == 40)
+if (e.keyCode == 28 || e.keyCode == 40 || 
+	e.keyCode == 37 || e.keyCode == 39)
 	e.preventDefault();
 
 pwgl.interaction.listOfPressedKeys[e.keyCode] = true;
 ```
 
-Then, during the animation loop this cache is checked to see whether these keys have been pressed. The radius of the satellite model is then increased or decreased.
+Then, during the animation loop this cache is checked to see whether these keys have been pressed. The satellite's orbit is modified accordingly.
 
 ```javascript
-if (pwgl.interaction.listOfPressedKeys[38]) {
+if (pwgl.interaction.listOfPressedKeys[38])
 	pwgl.satellite.circleRadius += 0.1;
-}
-
 if (pwgl.interaction.listOfPressedKeys[40]) {
 	if (pwgl.satellite.circleRadius < 5.5)
 		return;
-
 	pwgl.satellite.circleRadius -= 0.1;
+}
+if (pwgl.interaction.listOfPressedKeys[37])
+	pwgl.satellite.orbitSpeed += 100;
+if (pwgl.interaction.listOfPressedKeys[39]) {
+	if (pwgl.satellite.orbitSpeed <= 0)
+		return;
+	pwgl.satellite.orbitSpeed -= 100;
 }
 ```
