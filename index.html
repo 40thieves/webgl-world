@@ -854,7 +854,7 @@ function handleMouseWheel(e) {
 	// Webkit uses wheelDelta
 	if (e.wheelDelta) {
 		if (e.shiftKey) {
-			// Prevent movement too far
+			// Prevent movement too far left/right
 			if (e.wheelDelta > 0) {
 				if (totalX < -8)
 					return;
@@ -868,11 +868,14 @@ function handleMouseWheel(e) {
 			totalX -= e.wheelDelta / 120;
 		}
 		else if (e.altKey) {
+			// Prevent movement too far up/down
 			if (e.wheelDelta > 0) {
-
+				if (totalY > 8)
+					return;
 			}
 			else {
-
+				if (totalY < -9)
+					return;
 			}
 
 			transY += e.wheelDelta / 120;
