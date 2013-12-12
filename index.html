@@ -567,7 +567,7 @@ function loadImageForTexture(url, texture) {
 /**
  * Binds image object to texture, and generates mipmap
  * @param  {DOM Object} image   Image DOM element
- * @param  {Object} texture     Target texture object
+ * @param  {Object}     texture Target texture object
  */
 function textureFinishedLoading(image, texture) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Flips image to use WebGL axis, instead of DOM axis
